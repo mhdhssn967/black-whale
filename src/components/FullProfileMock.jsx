@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Building2, MapPin, Globe, Users, Target, Rocket, Download, ShieldCheck, 
@@ -584,6 +584,33 @@ export default function FullProfileMock() {
   const [showFullOverview, setShowFullOverview] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(null);
+  const [activeSection, setActiveSection] = useState('overview');
+
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    const sectionIds = ['overview', 'capital', 'snapshot', 'team', 'gallery', 'traction', 'vault', 'ask'];
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-[#f8fafc] text-[#334155] z-50 overflow-y-auto font-sans">
@@ -611,10 +638,51 @@ export default function FullProfileMock() {
         </button>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
-        
-        {/* SECTION 1: HERO HEADER */}
-        <div className="bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-8 flex gap-8">
+        {/* Left Column: TOC Sidebar */}
+        <div className="hidden lg:block w-60 flex-shrink-0">
+          <div className="sticky top-28 bg-white border border-[#e2e8f0] p-4 rounded-3xl shadow-sm space-y-1">
+            <p className="text-[10px] text-[#64748b] font-black uppercase tracking-widest mb-2 border-b border-[#f1f5f9] pb-1.5">Navigate Profile</p>
+            {[
+              { id: 'overview', label: 'Company Overview', icon: Building2 },
+              { id: 'capital', label: 'Capital Strategy', icon: TrendingUp },
+              { id: 'snapshot', label: 'Investor Snapshot', icon: Zap },
+              { id: 'team', label: 'Founding Team', icon: Users },
+              { id: 'gallery', label: 'Company Gallery', icon: Globe },
+              { id: 'traction', label: 'Traction & Map', icon: Activity },
+              { id: 'vault', label: 'Document Vault', icon: FileText },
+              { id: 'ask', label: 'Investment Ask', icon: Rocket }
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    const el = document.getElementById(item.id);
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }}
+                  className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-left transition-all duration-200 text-xs font-semibold ${
+                    isActive 
+                      ? 'bg-[#6366f1] text-white shadow-md shadow-indigo-600/10 font-black scale-[1.02]' 
+                      : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right Column: Main Content */}
+        <div className="flex-1 space-y-10 min-w-0">
+          
+          {/* SECTION 1: HERO HEADER */}
+          <div id="overview" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden shadow-sm">
           {/* Header Banner Background */}
           <div className="h-48 md:h-60 relative overflow-hidden">
             <img src="/LINKEDIN.jpg" alt="Cover" className="w-full h-full object-cover" />
@@ -622,9 +690,9 @@ export default function FullProfileMock() {
           </div>
           
           <div className="px-6 md:px-8 pb-8 relative">
-            <div className="flex flex-col sm:flex-row gap-6 sm:items-end justify-between -mt-16 md:-mt-20 mb-6">
+            <div className="flex flex-col sm:flex-row gap-6 sm:items-end justify-between pt-6 mb-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
-                <div className="w-32 h-32 bg-white border-4 border-white rounded-2xl flex items-center justify-center shadow-lg relative z-10 flex-shrink-0 overflow-hidden">
+                <div className="w-28 h-28 bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden">
                   <img src="/logo.png" alt="Oqulix Logo" className="w-full h-full object-contain p-2" />
                 </div>
                 <div className="space-y-2 pb-1">
@@ -729,7 +797,7 @@ export default function FullProfileMock() {
       </div>
 
       {/* SECTION: CAPITAL DEPLOYMENT & METRICS */}
-      <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+      <div id="capital" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
         <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-4">
           <div className="flex items-center space-x-2">
             <TrendingUp className="w-5 h-5 text-[#6366f1]" />
@@ -813,7 +881,7 @@ export default function FullProfileMock() {
       </div>
 
         {/* SECTION 2: INVESTOR SNAPSHOT */}
-        <div className="space-y-4">
+        <div id="snapshot" className="scroll-mt-24 space-y-4">
           <div className="flex items-center space-x-2">
             <Zap className="w-5 h-5 text-[#6366f1]" />
             <h3 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Investor Snapshot</h3>
@@ -845,7 +913,7 @@ export default function FullProfileMock() {
         </div>
 
         {/* SECTION: FOUNDING TEAM */}
-        <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
+        <div id="team" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
           <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
             <Users className="w-5 h-5 text-[#6366f1]" />
             <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Founding Team</h4>
@@ -877,7 +945,7 @@ export default function FullProfileMock() {
         </div>
 
         {/* SECTION: COMPANY GALLERY */}
-        <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
+        <div id="gallery" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
           <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
             <div className="flex items-center space-x-2">
               <Globe className="w-5 h-5 text-[#6366f1]" />
@@ -925,7 +993,7 @@ export default function FullProfileMock() {
         </div>
 
         {/* COMBINED SECTION: TRACTION, EXPANSION & PROJECTIONS DASHBOARD */}
-        <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 md:p-8 shadow-sm space-y-8">
+        <div id="traction" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 md:p-8 shadow-sm space-y-8">
           
           {/* Header & Year Slider */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-[#f1f5f9] pb-6">
@@ -1471,7 +1539,7 @@ export default function FullProfileMock() {
             </div>
 
             {/* DOCUMENT VAULT */}
-            <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
+            <div id="vault" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
               <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
                 <FileText className="w-5 h-5 text-[#6366f1]" />
                 <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Document Vault</h4>
@@ -1494,7 +1562,7 @@ export default function FullProfileMock() {
         </div>
 
         {/* SECTION: INVESTMENT ASK (Dedicated full-width section below all company details) */}
-        <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
+        <div id="ask" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
           <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
             <DollarSign className="w-5 h-5 text-[#6366f1]" />
             <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Investment Opportunity & Financial Ask</h4>
@@ -1644,6 +1712,8 @@ export default function FullProfileMock() {
             </div>
           </div>
         )}
+
+        </div>
 
       </div>
     </div>
