@@ -1,27 +1,22 @@
-// Helper function to capitalize first letter
-const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
-
 // Generate a professional-sounding startup profile based on raw input
 export const generateStartupProfile = (input) => {
   const name = input.name || "Unnamed Startup";
-  const industry = input.industry || "General Tech";
+  const industry = input.industry || input.segment || "General Tech";
   const category = input.category || "Software Solutions";
   const problem = input.problem || "Lack of efficient solutions in the industry.";
   const solution = input.solution || "An innovative platform that solves key operational issues.";
   const targetMarket = input.targetMarket || "Global enterprises and SMEs.";
   const revenueModel = input.revenueModel || "Subscription-based pricing.";
   const fundingStage = input.fundingStage || "Seed";
-  const fundingRequirement = input.fundingRequirement || "1,000,000";
+  const fundingRequirement = input.fundingRequirement || input.askAmount || "500000";
   const teamInfo = input.teamInfo || "Experienced team of founders and operators.";
-  const location = input.location || "San Francisco, CA";
+  const location = input.location || input.address || "San Francisco, CA";
   const customers = input.customers || "Early beta users.";
 
   // Calculate realistic scorecards dynamically based on input completeness and keywords
   let marketScore = 75;
   if (targetMarket.toLowerCase().includes("billion") || targetMarket.toLowerCase().includes("b") || targetMarket.toLowerCase().includes("global")) {
     marketScore += 15;
-  } else if (targetMarket.toLowerCase().includes("million") || targetMarket.toLowerCase().includes("m")) {
-    marketScore += 8;
   }
   marketScore = Math.min(98, Math.max(65, marketScore + Math.floor(Math.random() * 6)));
 
@@ -29,8 +24,6 @@ export const generateStartupProfile = (input) => {
   const saasKeywords = ["saas", "subscription", "platform", "recurring", "license", "api", "software"];
   if (saasKeywords.some(kw => revenueModel.toLowerCase().includes(kw) || category.toLowerCase().includes(kw))) {
     scalabilityScore += 18;
-  } else if (revenueModel.toLowerCase().includes("transaction") || revenueModel.toLowerCase().includes("commission")) {
-    scalabilityScore += 12;
   }
   scalabilityScore = Math.min(98, Math.max(60, scalabilityScore + Math.floor(Math.random() * 6)));
 
@@ -43,13 +36,12 @@ export const generateStartupProfile = (input) => {
 
   let readinessScore = 65;
   if (input.pitchDeckName) readinessScore += 10;
-  if (input.screenshots && input.screenshots.length > 0) readinessScore += 8;
-  if (input.linkedin) readinessScore += 5;
-  if (input.customers && input.customers.length > 15) readinessScore += 8;
+  if (input.founders && input.founders.length > 0) readinessScore += 10;
+  if (input.products && input.products.length > 0) readinessScore += 8;
   readinessScore = Math.min(95, Math.max(55, readinessScore + Math.floor(Math.random() * 5)));
 
   // AI-generated copywriting sections using professional startup templates
-  const overview = `${name} is an emerging leader in the ${industry} space, specializing in ${category}. By leveraging technology to address critical friction points, the company empowers its target customers to optimize outcomes and achieve significant cost savings. Built for high scalability, ${name} is positioning itself to capture a significant share of a rapidly expanding market.`;
+  const overview = input.overview || `${name} is an emerging leader in the ${industry} space, specializing in ${category}. By leveraging technology to address critical friction points, the company empowers its target customers to optimize outcomes and achieve significant cost savings. Built for high scalability, ${name} is positioning itself to capture a significant share of a rapidly expanding market.`;
 
   const problemStatement = `In the modern ${industry} landscape, stakeholders are facing severe operational inefficiencies. Specifically: "${problem.replace(/\.$/, "")}." This friction results in substantial financial waste, lost productivity, and administrative overhead, highlighting the critical need for a modern, automated solution.`;
 
@@ -59,7 +51,7 @@ export const generateStartupProfile = (input) => {
 
   const businessModelDetails = `The primary commercial engine is structured around a ${revenueModel.replace(/\.$/, "")}. This pricing framework is engineered to optimize customer lifetime value (LTV) while maintaining a low cost of customer acquisition (CAC). By providing clear ROI directly to decision-makers, ${name} anticipates rapid sales cycles and high net-revenue retention.`;
 
-  const competitiveAdvantage = `Unlike legacy providers who offer fragmented, manual tools, ${name} provides a seamless, integrated approach. Our key competitive differentiators include: 1) A proprietary workflow optimization model tailored for ${category}; 2) An intuitive interface that drastically reduces onboarding time; and 3) A capital-efficient deployment model that allows us to pass cost savings back to our customers.`;
+  const competitiveAdvantage = input.competitiveAdvantage || `Unlike legacy providers who offer fragmented, manual tools, ${name} provides a seamless, integrated approach. Our key competitive differentiators include: 1) A proprietary workflow optimization model tailored for ${category}; 2) An intuitive interface that drastically reduces onboarding time; and 3) A capital-efficient deployment model that allows us to pass cost savings back to our customers.`;
 
   // Dynamic investment highlights
   const investmentHighlights = [

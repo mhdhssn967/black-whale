@@ -7,6 +7,8 @@ import AIAnalysisLoader from './components/AIAnalysisLoader';
 import StartupProfileView from './components/StartupProfileView';
 import InvestorDirectory from './components/InvestorDirectory';
 import FullProfileMock from './components/FullProfileMock';
+import PaynbackProfile from './components/PaynbackProfile';
+import CompanyLogin from './components/CompanyLogin';
 import { initialStartups } from './data/mockStartups';
 import { generateStartupProfile } from './utils/aiGenerator';
 import { ShieldCheck, ArrowRight } from 'lucide-react';
@@ -20,7 +22,7 @@ const oqulixStartup = {
   category: "Immersive VR for Healthcare, Education & Therapy",
   problem: "Traditional physical rehabilitation (physiotherapy) and patient therapy are often tedious, low-engagement, and difficult to track objectively, leading to poor patient compliance and slower recovery rates.",
   solution: "An immersive Virtual Reality platform that gamifies physical therapy and cognitive rehabilitation. By using VR headsets and motion-tracking sensors, patients engage in interactive, therapeutic games while clinicians receive real-time data to track recovery progress.",
-  targetMarket: "Hospitals, rehabilitation centers, physiotherapy clinics, and special education schools. The global VR in healthcare market is projected to reach $10+ billion by 2030.",
+  targetMarket: "Hospitals, rehabilitation centers, physiotherapy clinics, and special education schools. The global VR in healthcare market is projected to reach ₹84,000+ Crores by 2030.",
   revenueModel: "SaaS licensing model for rehabilitation clinics (per-device subscription) and hardware lease options, alongside clinical-data-as-a-service analytics packages.",
   fundingStage: "Seed",
   fundingRequirement: "150000",
@@ -43,7 +45,7 @@ const oqulixStartup = {
     investmentHighlights: [
       "Founded by a specialized team of VR and software developers registered in Kerala's tech ecosystem.",
       "94% Innovation score due to proprietary motion tracking analytics software.",
-      "Addressable global VR healthcare market valued at over $10B by 2030.",
+      "Addressable global VR healthcare market valued at over ₹84,000 Crores by 2030.",
       "Clinically designed modules to gamify physical therapy, increasing patient compliance by up to 60%."
     ]
   },
@@ -125,7 +127,7 @@ export default function App() {
     if (!startup) {
       return (
         <div className="text-center py-16">
-          <h3 className="text-xl font-bold text-slate-100 font-display">Startup Profile Not Found</h3>
+          <h3 className="text-xl font-bold text-slate-800 font-display">Startup Profile Not Found</h3>
           <button 
             onClick={() => navigate('/investor/directory')} 
             className="mt-4 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold"
@@ -146,7 +148,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col text-slate-800">
       {/* Header handles navigation links */}
       <Header />
 
@@ -210,17 +212,23 @@ export default function App() {
           
           <Route path="/investor/profile/:id" element={<InvestorProfileRoute />} />
 
+          {/* Login Route */}
+          <Route path="/login" element={<CompanyLogin />} />
+
           {/* Full Mock Profile Route */}
           <Route path="/mock" element={<FullProfileMock />} />
 
-          {/* Fallback wildcard redirect */}
+          {/* Paynback Profile Route */}
+          <Route path="/companies/paynback" element={<PaynbackProfile />} />
+
+          {/* Wildcard wildcard redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-slate-700/40 bg-slate-950 py-6 text-center text-[11px] text-slate-500 font-semibold">
+      <footer className="w-full border-t border-slate-200 bg-white py-6 text-center text-[11px] text-slate-500 font-semibold">
         <div>© 2026 BlackWhale Inc. All rights reserved. • Powered by AI Analysis</div>
       </footer>
     </div>

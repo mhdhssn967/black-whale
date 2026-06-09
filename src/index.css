@@ -4,19 +4,6 @@
   --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display: "Outfit", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   
-  /* Reverse Slate Palette for Light Theme */
-  --color-slate-50: #0f172a;   /* mapped to dark gray for contrast */
-  --color-slate-100: #0f172a;  /* primary heading text */
-  --color-slate-200: #1e293b;  /* secondary heading text */
-  --color-slate-300: #334155;  /* body text */
-  --color-slate-400: #475569;  /* descriptive text */
-  --color-slate-500: #64748b;  /* metadata/caption text */
-  --color-slate-600: #cbd5e1;  /* light gray border/separator */
-  --color-slate-700: #e2e8f0;  /* mid gray border/separator */
-  --color-slate-800: #f1f5f9;  /* light container backgrounds */
-  --color-slate-900: #ffffff;  /* pristine white panel backgrounds */
-  --color-slate-950: #f8fafc;  /* main page background (slate-50 equivalent) */
-  
   --color-brand-50: #eef2ff;
   --color-brand-100: #e0e7ff;
   --color-brand-200: #c7d2fe;
@@ -25,10 +12,10 @@
   --color-brand-700: #4338ca;
   --color-brand-900: #312e81;
 
-  --color-cyan-400: #0891b2;   /* adjusted for light theme contrast */
+  --color-cyan-400: #0891b2;
   --color-cyan-500: #06b6d4;
 
-  --color-emerald-400: #059669; /* adjusted for light theme contrast */
+  --color-emerald-400: #059669;
   --color-emerald-500: #10b981;
 }
 
@@ -39,26 +26,15 @@
   
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    color: #0f172a !important; /* Force all headers to use dark slate */
-  }
-
-  /* Force textbox, textarea, and select text to be dark slate for readability */
-  input, textarea, select {
-    color: #0f172a !important;
-  }
-
-  /* Force placeholders to be visible gray */
-  input::placeholder, textarea::placeholder {
-    color: #64748b !important;
   }
 }
 
 /* Premium Light Glassmorphism utility */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .glass-panel-hover {
@@ -67,8 +43,8 @@
 
 .glass-panel-hover:hover {
   background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(99, 102, 241, 0.15);
-  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.06), 0 8px 10px -6px rgba(99, 102, 241, 0.04);
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05), 0 8px 10px -6px rgba(99, 102, 241, 0.03);
   transform: translateY(-2px);
 }
 

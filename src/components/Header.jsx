@@ -8,7 +8,7 @@ export default function Header() {
   const isInvestorActive = location.pathname.startsWith('/investor');
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-700/40 px-6 py-4 flex items-center justify-between shadow-sm">
+    <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
       {/* Brand Logo - Links to Home Hub */}
       <Link 
         to="/" 
@@ -31,14 +31,14 @@ export default function Header() {
       {/* Navigation & Controls */}
       <div className="flex items-center space-x-6">
         {/* Router Nav Buttons */}
-        <div className="flex items-center bg-slate-800 border border-slate-700/50 p-1 rounded-xl shadow-sm">
+        <div className="flex items-center bg-slate-100 border border-slate-200 p-1 rounded-xl shadow-sm">
           <Link
             id="role-btn-founder"
             to="/founder/onboarding"
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all duration-300 ${
               isFounderActive
                 ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/15'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-200/50'
             }`}
           >
             <Rocket className="w-3.5 h-3.5" />
@@ -51,7 +51,7 @@ export default function Header() {
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all duration-300 ${
               isInvestorActive
                 ? 'bg-gradient-to-r from-cyan-600 to-cyan-700 text-white shadow-md shadow-cyan-600/15'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-200/50'
             }`}
           >
             <Compass className="w-3.5 h-3.5" />
@@ -60,10 +60,10 @@ export default function Header() {
         </div>
 
         {/* Small Platform Guidelines indicator */}
-        <div className="hidden md:flex items-center text-xs text-slate-500 space-x-1.5 border-l border-slate-700/50 pl-6">
+        <div className="hidden md:flex items-center text-xs text-slate-500 space-x-1.5 border-l border-slate-200 pl-6">
           <Users className="w-3.5 h-3.5 text-indigo-500" />
-          <span className="font-semibold text-slate-400">Workspace:</span>
-          <span className={`font-bold ${isFounderActive ? 'text-indigo-600' : isInvestorActive ? 'text-cyan-600' : 'text-slate-400'}`}>
+          <span className="font-semibold text-slate-500">Workspace:</span>
+          <span className={`font-bold ${isFounderActive ? 'text-indigo-600' : isInvestorActive ? 'text-cyan-600' : 'text-slate-500'}`}>
             {isFounderActive ? 'Startup Founder' : isInvestorActive ? 'Investor View' : 'Not Selected'}
           </span>
         </div>

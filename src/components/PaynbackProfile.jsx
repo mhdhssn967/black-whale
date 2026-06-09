@@ -15,598 +15,97 @@ import {
 } from 'react-simple-maps';
 import ProfileEditorModal from './ProfileEditorModal';
 
-// Oqulix Mock Data (using explicit hex color text classes to bypass reversed theme)
-const DEFAULT_MOCK_COMPANY = {
-  id: "OQX-2026-VR",
-  verified: true,
-  name: "Oqulix Pvt Ltd",
-  logo: "OQ",
-  type: "Startup",
-  founded: "2023",
-  hq: "Ernakulam, Kerala, India",
-  industry: "VR / DeepTech",
-  stage: "Seed",
-  teamSize: "8",
-  website: "https://oqulix.com",
-  linkedin: "#",
-  twitter: "#",
-  github: "#",
-  vision: "To redefine physical rehabilitation and cognitive therapy through accessible, immersive reality.",
-  mission: "Develop clinical-grade VR solutions that gamify therapy, making recovery measurable and engaging.",
-  tagline: "Immersion. Innovation. Recovery.",
+// Import the Paynback separate data file
+import {
+  DEFAULT_MOCK_COMPANY,
+  DEFAULT_EXTENSIVE_OVERVIEW,
+  DEFAULT_COMPANY_PHOTOS,
+  DEFAULT_revenueDataByYear,
+  DEFAULT_userDataByYear,
+  DEFAULT_recoveryDataByYear,
+  DEFAULT_customerSegmentDataByYear,
+  DEFAULT_YEARLY_GROWTH_DATA,
+  DEFAULT_mapLocations
+} from '../data/paynbackData';
 
-  raised: "₹1.25 Crores",
-  required: "₹4.2 Crores",
-  revenue: "₹7 Lakhs MRR",
-  growth: "22% MoM",
-  customers: "6 Clinics & Hospitals",
-  countries: "2",
-  activeProducts: "2",
-  aiSummary: "Oqulix provides an immersive VR platform that gamifies physical and cognitive therapy. By integrating standard headsets with proprietary motion-tracking software, they turn tedious rehabilitation into engaging games while delivering precise biomechanical data to clinicians.",
-
-  team: [
-    {
-      name: "Vishnuprakash P",
-      role: "Managing Director & CEO",
-      bio: "VR systems expert with deep experience in hardware-software integration.",
-      edu: "B.Tech Computer Science",
-      exp: "XR Development, Product Strategy"
-    },
-    {
-      name: "Sandeep Nambiar P",
-      role: "Co-founder & Director",
-      bio: "Lead software engineer specializing in interactive 3D environments and physics.",
-      edu: "B.Tech Computer Science",
-      exp: "Game Development, Biomechanics Simulation"
-    },
-    {
-      name: "Anjana Remesh",
-      role: "Director",
-      bio: "Product strategist focused on clinical partnerships and user experience.",
-      edu: "MBA Healthcare Management",
-      exp: "Clinical Operations, B2B Sales"
-    }
-  ],
-
-  advisors: [
-    { name: "Dr. Rajesh Menon", role: "Chief Clinical Advisor", expertise: "Orthopedic Rehab", org: "Aster Medcity" },
-    { name: "Sarah Thomas", role: "Strategic Board Member", expertise: "HealthTech Scaling", org: "Kerala Startup Mission" }
-  ],
-
-  overview: {   
-    story: "Founded after observing high patient dropout rates in traditional physiotherapy due to pain and monotony.",
-    problem: "Traditional physical rehabilitation is tedious and relies on subjective observation, leading to poor patient compliance and lack of objective recovery data.",
-    challenges: "Clinics lack affordable tools to digitize and track specific joint movements in 3D space over time.",
-    marketGap: "Existing clinical motion-tracking systems are prohibitively expensive (₹40 Lakhs+) and require dedicated rooms.",
-    solution: "A ₹1.6 Lakhs VR package that tracks movement accurately, gamifies the exercises, and generates automatic clinical reports.",
-    advantage: "Proprietary software optimized for affordable standalone VR headsets, removing the need for external cameras or expensive PCs. "
-  },
-
-  products: [
-    {
-      name: "Oqulix Rehab Pro",
-      category: "Clinical Software",
-      overview: "Comprehensive suite of 15 gamified therapy modules for upper limb and cognitive recovery.",
-      audience: "Physiotherapy clinics, Hospitals.",
-      features: ["Real-time joint angle tracking", "Automated progress reports", "Patient-specific difficulty scaling"],
-      metrics: { users: "6 Active Clinics", growth: "150% YoY" },
-      image: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&auto=format&fit=crop&q=60"
-    }
-  ],
-
-  achievements: [
-    "KSUM Idea Grant Winner 2024",
-    "Top 5 HealthTech Startups - TieCon 2025",
-    "Patent Pending on Biomechanical Motion Tracking"
-  ],
-  milestones: [
-    { year: "2023", event: "Company Incorporated & Initial Prototype Completed" },
-    { year: "2024", event: "Clinical Trials at Aster Medcity Launched" },
-    { year: "2025", event: "Commercial Launch & First 6 B2B Clinic Subscriptions" },
-    { year: "2026", event: "Expansion to UAE Market Initiated" }
-  ],
-
-  partners: [
-    { name: "Kerala Startup Mission", type: "Incubator", value: "Funding & Workspace" },
-    { name: "Meta Quest Dev Program", type: "Technology Partner", value: "Hardware Support" }
-  ],
-
-  businessModel: {
-    overview: "Hardware Lease + SaaS Subscription.",
-    streams: [
-      "Hardware setup lease fee (₹1.25 Lakhs one-time setup)",
-      "Monthly Software License (₹20,000/device recurring)",
-      "Enterprise Multi-site Custom Integration packages"
-    ],
-    unitEconomics: { cac: "₹66,000", ltv: "₹10 Lakhs", grossMargin: "78%" }
-  },
-
-  market: {
-    tam: "₹88,000 Crores",
-    sam: "₹10,000 Crores",
-    som: "₹375 Crores",
-    cagr: "28.5%",
-    trends: "Hospitals rapidly adopting remote therapeutic monitoring (RTM) post-pandemic."
-  },
-
-  competitors: [
-    { name: "Oqulix", tech: "Standalone VR (Camera-less)", deployment: "Clinic/Home", price: "₹20,000/mo", edge: "No PC needed" },
-    { name: "MindMaze", tech: "PC-Tethered VR + Sensors", deployment: "Hospital Only", price: "₹1.6 Lakhs/mo", edge: "FDA approved" },
-    { name: "XRHealth", tech: "Telehealth VR", deployment: "Home", price: "₹40,000/mo", edge: "Large clinic network" }
-  ],
-
-  investment: {
-    ask: "₹4.2 Crores",
-    equity: "10%",
-    valuationPre: "₹37 Crores",
-    valuationPost: "₹42 Crores",
-    security: "Equity / SAFE",
-    utilization: [
-      { category: "Clinical Validation", percentage: 35 },
-      { category: "Product Development", percentage: 40 },
-      { category: "Sales & Marketing", percentage: 25 }
-    ],
-    expectedOutcomes: "Achieve FDA Class II clearance and scale to 50 clinics across India and UAE."
-  },
-
-  aiScore: {
-    overall: 92,
-    categories: { team: 90, market: 95, product: 94, financials: 85 },
-    strengths: "High clinical need, affordable unit economics, first-mover in regional markets.",
-    weaknesses: "Requires hardware logistics; regulatory hurdles for clinical adoption.",
-    concerns: "Need to prove long-term patient retention in home-use scenarios."
-  }
-};
-
-const DEFAULT_EXTENSIVE_OVERVIEW = "Oqulix is a clinical-grade Virtual Reality rehabilitation platform designed to gamify physical therapy and cognitive rehabilitation. Founded in 2023, the company addresses the massive problem of patient compliance and lack of objective clinical metrics in physical therapy. By utilizing advanced 3D motion-tracking algorithms on standalone VR headsets (like Meta Quest 3), Oqulix eliminates the need for expensive external cameras or high-end PC rigs. This makes therapeutic immersive tech affordable for local B2B clinics and accessible for remote patient home-care monitoring. Through clinical validations at institutions like Aster Medcity, Oqulix has demonstrated a 40% reduction in rehabilitation duration and over 90% patient retention rate compared to traditional methods. With active expansions spanning South India, the UAE, and future projections into Europe and North America, Oqulix aims to become the definitive operating system for digital physical therapy globally.";
-
-const DEFAULT_COMPANY_PHOTOS = [
-  { url: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&auto=format&fit=crop&q=80", title: "Oqulix VR Therapy Suite", desc: "Patient undergoing upper limb recovery exercises using standalone VR headset." },
-  { url: "https://images.unsplash.com/photo-1626379616459-b2ce1d9decbc?w=800&auto=format&fit=crop&q=80", title: "Biomechanical Motion Testing", desc: "R&D team calibrating high-frequency joint angle telemetry software." },
-  { url: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&auto=format&fit=crop&q=80", title: "Clinical Pilot at Aster Medcity", desc: "Physiotherapists monitoring real-time recovery dashboards during patient sessions." },
-  { url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80", title: "Core Engineering Team", desc: "Collaborating on the 3D physics engine and VR game modules at Kerala office." },
-  { url: "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?w=800&auto=format&fit=crop&q=80", title: "VR Rehab Game Modules", desc: "Visual preview of gamified challenge levels for cognitive exercises." },
-  { url: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&auto=format&fit=crop&q=80", title: "Hardware Calibration Lab", desc: "Quality assurance checks on standalone VR headset sensors before clinic dispatch." },
-  { url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=80", title: "Clinician Monitoring Portal", desc: "The web-based clinician portal showing patient compliance and range-of-motion charts." },
-  { url: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80", title: "User Experience Trials", desc: "Iterating headset ergonomics and interactive menus based on feedback from elderly users." }
-];
-
-// Year-specific datasets for charts (driven by year slider, starting from founded year 2023 up to 5-year projections 2031)
-const DEFAULT_revenueDataByYear = {
-  2023: [
-    { month: 'Jan', revenue: 0, expenses: 500 },
-    { month: 'Feb', revenue: 0, expenses: 500 },
-    { month: 'Mar', revenue: 0, expenses: 800 },
-    { month: 'Apr', revenue: 0, expenses: 1000 },
-    { month: 'May', revenue: 0, expenses: 1200 },
-    { month: 'Jun', revenue: 0, expenses: 1500 },
-  ],
-  2024: [
-    { month: 'Jan', revenue: 0, expenses: 2000 },
-    { month: 'Feb', revenue: 0, expenses: 2200 },
-    { month: 'Mar', revenue: 0, expenses: 2500 },
-    { month: 'Apr', revenue: 0, expenses: 2800 },
-    { month: 'May', revenue: 1000, expenses: 3000 },
-    { month: 'Jun', revenue: 1500, expenses: 3200 },
-  ],
-  2025: [
-    { month: 'Jan', revenue: 2500, expenses: 3500 },
-    { month: 'Feb', revenue: 3200, expenses: 3800 },
-    { month: 'Mar', revenue: 4500, expenses: 4000 },
-    { month: 'Apr', revenue: 5800, expenses: 4200 },
-    { month: 'May', revenue: 7500, expenses: 4500 },
-    { month: 'Jun', revenue: 8500, expenses: 4800 },
-  ],
-  2026: [
-    { month: 'Jan', revenue: 12000, expenses: 8000 },
-    { month: 'Feb', revenue: 16000, expenses: 9500 },
-    { month: 'Mar', revenue: 21000, expenses: 11000 },
-    { month: 'Apr', revenue: 25000, expenses: 12000 },
-    { month: 'May', revenue: 28000, expenses: 14000 },
-    { month: 'Jun', revenue: 32000, expenses: 15000 },
-  ],
-  2027: [
-    { month: 'Jan', revenue: 35000, expenses: 17000 },
-    { month: 'Feb', revenue: 38000, expenses: 18500 },
-    { month: 'Mar', revenue: 42000, expenses: 20000 },
-    { month: 'Apr', revenue: 46000, expenses: 21000 },
-    { month: 'May', revenue: 50000, expenses: 22000 },
-    { month: 'Jun', revenue: 55000, expenses: 23500 },
-  ],
-  2028: [
-    { month: 'Jan', revenue: 60000, expenses: 28000 },
-    { month: 'Feb', revenue: 65000, expenses: 29500 },
-    { month: 'Mar', revenue: 72000, expenses: 32000 },
-    { month: 'Apr', revenue: 78000, expenses: 34000 },
-    { month: 'May', revenue: 84000, expenses: 36000 },
-    { month: 'Jun', revenue: 92000, expenses: 38000 },
-  ],
-  2029: [
-    { month: 'Jan', revenue: 100000, expenses: 45000 },
-    { month: 'Feb', revenue: 110000, expenses: 47000 },
-    { month: 'Mar', revenue: 122000, expenses: 50000 },
-    { month: 'Apr', revenue: 132000, expenses: 52000 },
-    { month: 'May', revenue: 144000, expenses: 54000 },
-    { month: 'Jun', revenue: 158000, expenses: 57500 },
-  ],
-  2030: [
-    { month: 'Jan', revenue: 175000, expenses: 62000 },
-    { month: 'Feb', revenue: 190000, expenses: 65000 },
-    { month: 'Mar', revenue: 205000, expenses: 68000 },
-    { month: 'Apr', revenue: 220000, expenses: 70000 },
-    { month: 'May', revenue: 235000, expenses: 73000 },
-    { month: 'Jun', revenue: 250000, expenses: 76000 },
-  ],
-  2031: [
-    { month: 'Jan', revenue: 280000, expenses: 80000 },
-    { month: 'Feb', revenue: 305000, expenses: 84000 },
-    { month: 'Mar', revenue: 330000, expenses: 88000 },
-    { month: 'Apr', revenue: 360000, expenses: 92000 },
-    { month: 'May', revenue: 390000, expenses: 96000 },
-    { month: 'Jun', revenue: 420000, expenses: 100000 },
-  ]
-};
-
-const DEFAULT_patientDataByYear = {
-  2023: [
-    { month: 'Jan', sessions: 0 },
-    { month: 'Feb', sessions: 0 },
-    { month: 'Mar', sessions: 0 },
-    { month: 'Apr', sessions: 0 },
-    { month: 'May', sessions: 0 },
-    { month: 'Jun', sessions: 0 },
-  ],
-  2024: [
-    { month: 'Jan', sessions: 10 },
-    { month: 'Feb', sessions: 25 },
-    { month: 'Mar', sessions: 45 },
-    { month: 'Apr', sessions: 80 },
-    { month: 'May', sessions: 110 },
-    { month: 'Jun', sessions: 150 },
-  ],
-  2025: [
-    { month: 'Jan', sessions: 200 },
-    { month: 'Feb', sessions: 350 },
-    { month: 'Mar', sessions: 520 },
-    { month: 'Apr', sessions: 700 },
-    { month: 'May', sessions: 950 },
-    { month: 'Jun', sessions: 1200 },
-  ],
-  2026: [
-    { month: 'Jan', sessions: 1800 },
-    { month: 'Feb', sessions: 2500 },
-    { month: 'Mar', sessions: 3800 },
-    { month: 'Apr', sessions: 5200 },
-    { month: 'May', sessions: 6800 },
-    { month: 'Jun', sessions: 8500 },
-  ],
-  2027: [
-    { month: 'Jan', sessions: 9500 },
-    { month: 'Feb', sessions: 11000 },
-    { month: 'Mar', sessions: 13000 },
-    { month: 'Apr', sessions: 15500 },
-    { month: 'May', sessions: 18000 },
-    { month: 'Jun', sessions: 21000 },
-  ],
-  2028: [
-    { month: 'Jan', sessions: 24000 },
-    { month: 'Feb', sessions: 27500 },
-    { month: 'Mar', sessions: 31000 },
-    { month: 'Apr', sessions: 35000 },
-    { month: 'May', sessions: 40000 },
-    { month: 'Jun', sessions: 45000 },
-  ],
-  2029: [
-    { month: 'Jan', sessions: 50000 },
-    { month: 'Feb', sessions: 56000 },
-    { month: 'Mar', sessions: 62000 },
-    { month: 'Apr', sessions: 70000 },
-    { month: 'May', sessions: 78000 },
-    { month: 'Jun', sessions: 88000 },
-  ],
-  2030: [
-    { month: 'Jan', sessions: 98000 },
-    { month: 'Feb', sessions: 110000 },
-    { month: 'Mar', sessions: 122000 },
-    { month: 'Apr', sessions: 135000 },
-    { month: 'May', sessions: 150000 },
-    { month: 'Jun', sessions: 165000 },
-  ],
-  2031: [
-    { month: 'Jan', sessions: 180000 },
-    { month: 'Feb', sessions: 200000 },
-    { month: 'Mar', sessions: 220000 },
-    { month: 'Apr', sessions: 245000 },
-    { month: 'May', sessions: 270000 },
-    { month: 'Jun', sessions: 300000 },
-  ]
-};
-
-const DEFAULT_recoveryDataByYear = {
-  2023: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 90, oqulix: 90 },
-    { week: 'Wk 6', traditional: 70, oqulix: 70 },
-    { week: 'Wk 9', traditional: 50, oqulix: 50 },
-    { week: 'Wk 12', traditional: 30, oqulix: 30 },
-  ],
-  2024: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 85, oqulix: 80 },
-    { week: 'Wk 6', traditional: 65, oqulix: 60 },
-    { week: 'Wk 9', traditional: 45, oqulix: 40 },
-    { week: 'Wk 12', traditional: 25, oqulix: 15 },
-  ],
-  2025: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 85, oqulix: 72 },
-    { week: 'Wk 6', traditional: 65, oqulix: 48 },
-    { week: 'Wk 9', traditional: 45, oqulix: 20 },
-    { week: 'Wk 12', traditional: 25, oqulix: 2 },
-  ],
-  2026: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 85, oqulix: 65 },
-    { week: 'Wk 6', traditional: 65, oqulix: 35 },
-    { week: 'Wk 9', traditional: 45, oqulix: 10 },
-    { week: 'Wk 12', traditional: 25, oqulix: 0 },
-  ],
-  2027: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 85, oqulix: 60 },
-    { week: 'Wk 6', traditional: 65, oqulix: 30 },
-    { week: 'Wk 9', traditional: 45, oqulix: 5 },
-    { week: 'Wk 12', traditional: 25, oqulix: 0 },
-  ],
-  2028: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 85, oqulix: 58 },
-    { week: 'Wk 6', traditional: 65, oqulix: 28 },
-    { week: 'Wk 9', traditional: 45, oqulix: 2 },
-    { week: 'Wk 12', traditional: 25, oqulix: 0 },
-  ],
-  2029: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 85, oqulix: 55 },
-    { week: 'Wk 6', traditional: 65, oqulix: 25 },
-    { week: 'Wk 9', traditional: 45, oqulix: 0 },
-    { week: 'Wk 12', traditional: 25, oqulix: 0 },
-  ],
-  2030: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 85, oqulix: 55 },
-    { week: 'Wk 6', traditional: 65, oqulix: 22 },
-    { week: 'Wk 9', traditional: 45, oqulix: 0 },
-    { week: 'Wk 12', traditional: 25, oqulix: 0 },
-  ],
-  2031: [
-    { week: 'Wk 1', traditional: 100, oqulix: 100 },
-    { week: 'Wk 3', traditional: 85, oqulix: 55 },
-    { week: 'Wk 6', traditional: 65, oqulix: 20 },
-    { week: 'Wk 9', traditional: 45, oqulix: 0 },
-    { week: 'Wk 12', traditional: 25, oqulix: 0 },
-  ]
-};
-
-const DEFAULT_customerSegmentDataByYear = {
-  2023: [
-    { name: 'Private Clinics', value: 0 },
-    { name: 'Hospitals', value: 0 },
-    { name: 'Rehab Centers', value: 0 },
-  ],
-  2024: [
-    { name: 'Private Clinics', value: 100 },
-    { name: 'Hospitals', value: 0 },
-    { name: 'Rehab Centers', value: 0 },
-  ],
-  2025: [
-    { name: 'Private Clinics', value: 67 },
-    { name: 'Hospitals', value: 17 },
-    { name: 'Rehab Centers', value: 17 },
-  ],
-  2026: [
-    { name: 'Private Clinics', value: 52 },
-    { name: 'Hospitals', value: 28 },
-    { name: 'Rehab Centers', value: 20 },
-  ],
-  2027: [
-    { name: 'Private Clinics', value: 45 },
-    { name: 'Hospitals', value: 35 },
-    { name: 'Rehab Centers', value: 20 },
-  ],
-  2028: [
-    { name: 'Private Clinics', value: 40 },
-    { name: 'Hospitals', value: 40 },
-    { name: 'Rehab Centers', value: 20 },
-  ],
-  2029: [
-    { name: 'Private Clinics', value: 35 },
-    { name: 'Hospitals', value: 45 },
-    { name: 'Rehab Centers', value: 20 },
-  ],
-  2030: [
-    { name: 'Private Clinics', value: 30 },
-    { name: 'Hospitals', value: 50 },
-    { name: 'Rehab Centers', value: 20 },
-  ],
-  2031: [
-    { name: 'Private Clinics', value: 25 },
-    { name: 'Hospitals', value: 55 },
-    { name: 'Rehab Centers', value: 20 },
-  ]
-};
-
-// Slider projections & future analysis data starting from founded year 2023 to 2031
-const DEFAULT_YEARLY_GROWTH_DATA = {
-  2023: {
-    year: "2023",
-    revenue: "₹0 ARR",
-    clinics: "0",
-    sessions: "0",
-    analysis: "Company incorporated. Focus on developing hardware prototype v0.1 and standalone VR environment design. No external revenue generated.",
-    milestone: "Company Incorporated & Initial Prototype"
-  },
-  2024: {
-    year: "2024",
-    revenue: "₹12.5 Lakhs ARR",
-    clinics: "2",
-    sessions: "150+",
-    analysis: "Focus on local clinical validation and KSUM grant deployment. Launched initial testing at Aster Medcity with 15 patients. Hardware v1.0 finalized.",
-    milestone: "Clinical Validation & KSUM Grant Winner"
-  },
-  2025: {
-    year: "2025",
-    revenue: "₹85 Lakhs ARR",
-    clinics: "6",
-    sessions: "1,200+",
-    analysis: "Commercial launch of Oqulix Rehab Pro SaaS. Secured first 6 B2B clinic subscriptions. Expanding sales team in South India and preparing UAE pilot setup.",
-    milestone: "Commercial SaaS Launch & First B2B Subscriptions"
-  },
-  2026: {
-    year: "2026",
-    revenue: "₹3.15 Crores ARR",
-    clinics: "25+",
-    sessions: "8,500+",
-    analysis: "Aggressive entry into Middle East (Dubai HQ) and Southeast Asia distribution hub. Target 25+ clinics. FDA Class II clearance filing initiated.",
-    milestone: "International Expansion (UAE & Singapore) & FDA Filing"
-  },
-  2027: {
-    year: "2027",
-    revenue: "₹5.5 Crores ARR (Proj)",
-    clinics: "45+",
-    sessions: "21,000+",
-    analysis: "Deploying Series A ask funds to expand European sales and kick off NHS clinical pilots in the UK. Launching v2.0 AI-powered biomechanical telemetry platform.",
-    milestone: "UK Market Pilot & Series A Deployment"
-  },
-  2028: {
-    year: "2028",
-    revenue: "₹9.2 Crores ARR (Proj)",
-    clinics: "80+",
-    sessions: "45,000+",
-    analysis: "Entering Japan via local distributor partnerships. Scaling production capacities. Establishing high-margin hardware lease partnerships.",
-    milestone: "Japan Joint Venture & Product Scaling"
-  },
-  2029: {
-    year: "2029",
-    revenue: "₹15.8 Crores ARR (Proj)",
-    clinics: "150+",
-    sessions: "88,000+",
-    analysis: "Secured EU CE Mark clearance. Commencing direct sales operations in Germany and France. 78% gross margins validated on SaaS subscription tier.",
-    milestone: "CE Mark Clearance & Western Europe Launch"
-  },
-  2030: {
-    year: "2030",
-    revenue: "₹25 Crores ARR (Proj)",
-    clinics: "280+",
-    sessions: "165,000+",
-    analysis: "FDA Class II clearance approved. Major US commercial launch via partner networks in NY and California. Remote therapeutic monitoring integrations active.",
-    milestone: "FDA Approval & USA Commercial Launch"
-  },
-  2031: {
-    year: "2031",
-    revenue: "₹42 Crores ARR (Proj)",
-    clinics: "500+",
-    sessions: "300,000+",
-    analysis: "Attaining TGA approvals for Australia/Oceania market. Setting up global telehealth rehab system. Preparing for Series B institutional funding.",
-    milestone: "Australia Entry & Prep for Series B IPO/Exit"
-  }
-};
-
-// Map nodes representing presence at each milestone year (using absolute longitude and latitude)
-const DEFAULT_mapLocations = {
-  2023: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, Initial Setup" }
-  ],
-  2024: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, 6 active clinic integrations" }
-  ],
-  2025: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, 6 active clinic integrations" },
-    { id: 'uae', name: "UAE Regional Office (Dubai)", coordinates: [55.27, 25.20], desc: "B2B Hospital Pilot launched" }
-  ],
-  2026: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, 6 active clinic integrations" },
-    { id: 'uae', name: "UAE Regional Office (Dubai)", coordinates: [55.27, 25.20], desc: "B2B Hospital Pilot launched" },
-    { id: 'singapore', name: "Singapore Office (Future)", coordinates: [103.81, 1.35], desc: "Planned Southeast Asian distribution hub" }
-  ],
-  2027: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, 6 active clinic integrations" },
-    { id: 'uae', name: "UAE Regional Office (Dubai)", coordinates: [55.27, 25.20], desc: "B2B Hospital Pilot launched" },
-    { id: 'singapore', name: "Singapore Office", coordinates: [103.81, 1.35], desc: "Active hub with 12 B2B hospital accounts" },
-    { id: 'uk', name: "UK Regional Hub (London)", coordinates: [-0.12, 51.50], desc: "NHS pilot trials initiated" }
-  ],
-  2028: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, 6 active clinic integrations" },
-    { id: 'uae', name: "UAE Regional Office (Dubai)", coordinates: [55.27, 25.20], desc: "B2B Hospital Pilot launched" },
-    { id: 'singapore', name: "Singapore Office", coordinates: [103.81, 1.35], desc: "Active hub with 12 B2B hospital accounts" },
-    { id: 'uk', name: "UK Regional Hub (London)", coordinates: [-0.12, 51.50], desc: "NHS pilot trials initiated" },
-    { id: 'japan', name: "Japan Distributor (Tokyo)", coordinates: [139.69, 35.67], desc: "Partnered with local rehab machinery giant" }
-  ],
-  2029: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, 6 active clinic integrations" },
-    { id: 'uae', name: "UAE Regional Office (Dubai)", coordinates: [55.27, 25.20], desc: "B2B Hospital Pilot launched" },
-    { id: 'singapore', name: "Singapore Office", coordinates: [103.81, 1.35], desc: "Active hub with 12 B2B hospital accounts" },
-    { id: 'uk', name: "UK Regional Hub (London)", coordinates: [-0.12, 51.50], desc: "NHS pilot trials initiated" },
-    { id: 'japan', name: "Japan Distributor (Tokyo)", coordinates: [139.69, 35.67], desc: "Partnered with local rehab machinery giant" },
-    { id: 'germany', name: "Germany Hub (Berlin)", coordinates: [13.40, 52.52], desc: "CE Mark clearance obtained; EU sales kickoff" }
-  ],
-  2030: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, 6 active clinic integrations" },
-    { id: 'uae', name: "UAE Regional Office (Dubai)", coordinates: [55.27, 25.20], desc: "B2B Hospital Pilot launched" },
-    { id: 'singapore', name: "Singapore Office", coordinates: [103.81, 1.35], desc: "Active hub with 12 B2B hospital accounts" },
-    { id: 'uk', name: "UK Regional Hub (London)", coordinates: [-0.12, 51.50], desc: "NHS pilot trials initiated" },
-    { id: 'japan', name: "Japan Distributor (Tokyo)", coordinates: [139.69, 35.67], desc: "Partnered with local rehab machinery giant" },
-    { id: 'germany', name: "Germany Hub (Berlin)", coordinates: [13.40, 52.52], desc: "CE Mark clearance obtained; EU sales kickoff" },
-    { id: 'us', name: "US HQ (New York)", coordinates: [-74.00, 40.71], desc: "FDA Class II clearance approved; US sales partner networks active" }
-  ],
-  2031: [
-    { id: 'india', name: "India HQ (Ernakulam)", coordinates: [76.27, 9.98], desc: "R&D Centre, 6 active clinic integrations" },
-    { id: 'uae', name: "UAE Regional Office (Dubai)", coordinates: [55.27, 25.20], desc: "B2B Hospital Pilot launched" },
-    { id: 'singapore', name: "Singapore Office", coordinates: [103.81, 1.35], desc: "Active hub with 12 B2B hospital accounts" },
-    { id: 'uk', name: "UK Regional Hub (London)", coordinates: [-0.12, 51.50], desc: "NHS pilot trials initiated" },
-    { id: 'japan', name: "Japan Distributor (Tokyo)", coordinates: [139.69, 35.67], desc: "Partnered with local rehab machinery giant" },
-    { id: 'germany', name: "Germany Hub (Berlin)", coordinates: [13.40, 52.52], desc: "CE Mark clearance obtained; EU sales kickoff" },
-    { id: 'us', name: "US HQ (New York)", coordinates: [-74.00, 40.71], desc: "FDA Class II clearance approved; US sales partner networks active" },
-    { id: 'australia', name: "Australia Hub (Sydney)", coordinates: [151.20, -33.86], desc: "TGA approval; expansion to Oceania clinics" }
-  ]
-};
+import paynbackLogo from '../assets/paynback/logo.png';
+import paynbackCover from '../assets/paynback/cover.png';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const CHART_COLORS = ['#6366f1', '#06b6d4', '#10b981'];
 
-export default function FullProfileMock() {
+export default function PaynbackProfile() {
   const navigate = useNavigate();
-  const [mockState, setMockState] = useState({
-    company: DEFAULT_MOCK_COMPANY,
-    overview: DEFAULT_EXTENSIVE_OVERVIEW,
-    photos: DEFAULT_COMPANY_PHOTOS,
-    revenue: DEFAULT_revenueDataByYear,
-    patients: DEFAULT_patientDataByYear,
-    recovery: DEFAULT_recoveryDataByYear,
-    clinics: DEFAULT_customerSegmentDataByYear,
-    growth: DEFAULT_YEARLY_GROWTH_DATA,
-    locations: DEFAULT_mapLocations
-  });
-  const [isEditing, setIsEditing] = useState(false);
+  const [mockState, setMockState] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const MOCK_COMPANY = mockState.company;
-  const EXTENSIVE_OVERVIEW = mockState.overview;
-  const COMPANY_PHOTOS = mockState.photos;
-  const revenueDataByYear = mockState.revenue;
-  const patientDataByYear = mockState.patients;
-  const recoveryDataByYear = mockState.recovery;
-  const customerSegmentDataByYear = mockState.clinics;
-  const YEARLY_GROWTH_DATA = mockState.growth;
-  const mapLocations = mockState.locations;
+  useEffect(() => {
+    // Check authentication
+    const authUser = sessionStorage.getItem('authenticatedUser');
+    if (authUser !== 'paynback') {
+      navigate('/login');
+      return;
+    }
+
+    const fetchOrSeedData = async () => {
+      try {
+        const docRef = doc(db, 'users', 'companies', 'paynback', 'all_data');
+        const docSnap = await getDoc(docRef);
+
+        // If data exists AND it doesn't contain the outdated 'clinics' key, use it.
+        // Otherwise (if it's missing or has old data), overwrite it with the new schema.
+        if (docSnap.exists() && !docSnap.data().clinics) {
+          const dbData = docSnap.data();
+          const mergedTeam = (dbData.company.team || DEFAULT_MOCK_COMPANY.team).map(member => ({
+            image: "",
+            ...member
+          }));
+
+          setMockState({
+            ...dbData,
+            company: {
+              ...DEFAULT_MOCK_COMPANY,
+              ...dbData.company,
+              team: mergedTeam
+            }
+          });
+        } else {
+          console.log("Updating Firestore with latest data schema...");
+          const initialData = {
+            company: DEFAULT_MOCK_COMPANY,
+            overview: DEFAULT_EXTENSIVE_OVERVIEW,
+            photos: DEFAULT_COMPANY_PHOTOS,
+            revenue: DEFAULT_revenueDataByYear,
+            users: DEFAULT_userDataByYear,
+            recovery: DEFAULT_recoveryDataByYear,
+            segments: DEFAULT_customerSegmentDataByYear,
+            growth: DEFAULT_YEARLY_GROWTH_DATA,
+            locations: DEFAULT_mapLocations
+          };
+          await setDoc(docRef, initialData);
+          setMockState(initialData);
+        }
+      } catch (error) {
+        console.error("Error accessing Firestore:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchOrSeedData();
+  }, []);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [mapYear, setMapYear] = useState(2026); // Set default state to current year (2026)
   const [activeLocation, setActiveLocation] = useState({
-    id: 'singapore', 
-    name: "Singapore Office (Future)", 
-    coordinates: [103.81, 1.35], 
-    desc: "Planned Southeast Asian distribution hub"
+    id: 'uae', 
+    name: "UAE Office (Dubai)", 
+    coordinates: [55.27, 25.20], 
+    desc: "Active commercial merchant network expansion"
   });
   const [showFullOverview, setShowFullOverview] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
+  const [expandedTeamBio, setExpandedTeamBio] = useState({});
   const [activePhotoIndex, setActivePhotoIndex] = useState(null);
   const [activeSection, setActiveSection] = useState('overview');
 
@@ -636,6 +135,25 @@ export default function FullProfileMock() {
     return () => observer.disconnect();
   }, []);
 
+  if (isLoading || !mockState) {
+    return (
+      <div className="fixed inset-0 bg-[#f8fafc] flex flex-col items-center justify-center z-50">
+        <Activity className="w-8 h-8 text-[#6366f1] animate-spin mb-4" />
+        <p className="text-sm font-bold text-[#64748b] tracking-wider uppercase">Loading Profile Data...</p>
+      </div>
+    );
+  }
+
+  const MOCK_COMPANY = mockState.company;
+  const EXTENSIVE_OVERVIEW = mockState.overview;
+  const COMPANY_PHOTOS = mockState.photos;
+  const revenueDataByYear = mockState.revenue;
+  const userDataByYear = mockState.users;
+  const recoveryDataByYear = mockState.recovery;
+  const customerSegmentDataByYear = mockState.segments;
+  const YEARLY_GROWTH_DATA = mockState.growth;
+  const mapLocations = mockState.locations;
+
   return (
     <div className="fixed inset-0 bg-[#f8fafc] text-[#334155] z-50 overflow-y-auto font-sans">
       
@@ -649,8 +167,8 @@ export default function FullProfileMock() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <span className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest block">BlackWhale Mock Showcase</span>
-            <h2 className="text-base font-black text-[#0f172a] leading-tight">Oqulix Profile Output</h2>
+            <span className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest block">BlackWhale Showcase</span>
+            <h2 className="text-base font-black text-[#0f172a] leading-tight">{MOCK_COMPANY.name} Profile</h2>
           </div>
         </div>
         
@@ -665,7 +183,7 @@ export default function FullProfileMock() {
             onClick={() => navigate('/')}
             className="px-4 py-2 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-600/10"
           >
-            Exit Mock View
+            Exit Profile View
           </button>
         </div>
       </div>
@@ -717,14 +235,14 @@ export default function FullProfileMock() {
           <div id="overview" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden shadow-sm">
           {/* Header Banner Background */}
           <div className="h-48 md:h-60 relative overflow-hidden">
-            <img src="/LINKEDIN.jpg" alt="Cover" className="w-full h-full object-cover" />
+            <img src={MOCK_COMPANY.cover?.startsWith('http') ? MOCK_COMPANY.cover : paynbackCover} alt="Cover" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-[#0f172a]/10"></div>
           </div>
           
           <div className="px-6 md:px-8 pb-8 relative">
             <div className="flex flex-col sm:flex-row items-start gap-5 pt-6 mb-6">
-              <div className="w-28 h-28 bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                <img src="/logo.png" alt="Oqulix Logo" className="w-full h-full object-contain p-2" />
+              <div className="w-28 h-28 bg-white text-white rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden font-black text-3xl shadow-sm border border-slate-100">
+                <img src={MOCK_COMPANY.logo?.startsWith('http') ? MOCK_COMPANY.logo : paynbackLogo} alt="PayNback Logo" className="w-full h-full object-contain p-2" />
               </div>
               <div className="space-y-4 pb-1 flex-1">
                 <div className="space-y-2">
@@ -745,12 +263,12 @@ export default function FullProfileMock() {
                 {/* Aspect & Segment Tags */}
                 <div className="flex flex-wrap gap-1.5">
                   {[
-                    { label: "Clinical VR", color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
+                    { label: "FinTech Payments", color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
                     { label: "B2B SaaS Model", color: "bg-teal-50 text-teal-700 border-teal-100" },
-                    { label: "KSUM Incubated", color: "bg-sky-50 text-sky-700 border-sky-100" },
+                    { label: "NPCI Approved", color: "bg-sky-50 text-sky-700 border-sky-100" },
                     { label: "Patent Pending Tech", color: "bg-amber-50 text-amber-700 border-amber-100" },
-                    { label: "Aster Medcity Partner", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-                    { label: "FDA Class II Filing", color: "bg-rose-50 text-rose-700 border-rose-100" }
+                    { label: "Yes Bank Escrow Partner", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
+                    { label: "Instant Yield Ledger", color: "bg-rose-50 text-rose-700 border-rose-100" }
                   ].map((tag, idx) => (
                     <span key={idx} className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md border ${tag.color}`}>
                       {tag.label}
@@ -843,12 +361,12 @@ export default function FullProfileMock() {
           
           {/* Historical Seed Deployment Details */}
           <div className="space-y-4">
-            <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Seed Capital Deployment (₹1.25 Crores Raised)</h4>
+            <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Seed Capital Deployment (₹1.5 Crores Raised)</h4>
             <div className="space-y-3">
               {[
-                { label: "Product & VR Telemetry R&D", val: "₹50 Lakhs", pct: "40%", desc: "Developed motion accuracy calibration algorithm." },
-                { label: "Clinical Validation trials", val: "₹44 Lakhs", pct: "35%", desc: "Funding Aster Medcity trials & ethical audits." },
-                { label: "Operations & Market Launch", val: "₹31 Lakhs", pct: "25%", desc: "B2B client acquisitions, KSUM workspace lease." }
+                { label: "Merchant Acquisition & Onboarding", val: "₹60 Lakhs", pct: "40%", desc: "B2B sales network and POS marketing collateral." },
+                { label: "Ledger R&D & Core Systems", val: "₹52.5 Lakhs", pct: "35%", desc: "Developed micro-ledger engine and UPI callback APIs." },
+                { label: "Operations & Marketing", val: "₹37.5 Lakhs", pct: "25%", desc: "Compliance registration, office lease, and user launch campaigns." }
               ].map((item, idx) => (
                 <div key={idx} className="bg-[#f8fafc] border border-[#e2e8f0] p-4 rounded-2xl space-y-2">
                   <div className="flex justify-between text-xs font-black">
@@ -869,10 +387,10 @@ export default function FullProfileMock() {
             <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Current Treasury & Runway Metrics</h4>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "MONTHLY BURN RATE", value: "₹3.7 Lakhs", sub: "Operational Expenses" },
-                { label: "CURRENT CASH BALANCE", value: "₹54 Lakhs", sub: "Remaining Seed Reserves" },
-                { label: "PROJECTED RUNWAY", value: "14.6 Months", sub: "Until Next Round" },
-                { label: "LTV / CAC RATIO", value: "15.0x", sub: "LTV: ₹10L / CAC: ₹66k" }
+                { label: "MONTHLY BURN RATE", value: "₹4.5 Lakhs", sub: "Operational Expenses" },
+                { label: "CURRENT CASH BALANCE", value: "₹68 Lakhs", sub: "Remaining Seed Reserves" },
+                { label: "PROJECTED RUNWAY", value: "15.1 Months", sub: "Until Next Round" },
+                { label: "LTV / CAC RATIO", value: "15.0x", sub: "LTV: ₹1.8k / CAC: ₹120" }
               ].map((metric, idx) => (
                 <div key={idx} className="bg-[#f8fafc] border border-[#e2e8f0] p-4 rounded-2xl flex flex-col justify-between min-h-[90px]">
                   <div>
@@ -892,15 +410,15 @@ export default function FullProfileMock() {
               <div className="space-y-3 text-xs font-semibold text-[#475569]">
                 <div className="flex items-start space-x-2">
                   <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span>Developed VR motion-tracking engine with latency below 12ms.</span>
+                  <span>Integrated multi-bank UPI settlement routing under 100ms.</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span>Completed Aster Medcity pilot validation with 45 clinical subjects.</span>
+                  <span>Onboarded 120+ retail merchants in HSR Layout and Koramangala.</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span>Successfully converted 6 physical therapy clinics to paying SaaS clients.</span>
+                  <span>Scaled consumer app to 45,000 active wallets with 82% margin.</span>
                 </div>
               </div>
               <div className="bg-white border border-[#cbd5e1] p-3 rounded-xl text-[10px] font-bold text-[#4f46e5] flex items-center justify-between">
@@ -922,12 +440,12 @@ export default function FullProfileMock() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: "CAPITAL RAISED", value: MOCK_COMPANY.raised, desc: "Seed Round" },
-              { label: "FUNDING REQUIRED", value: MOCK_COMPANY.required, color: "text-[#6366f1]", desc: "For scaling & trials" },
-              { label: "CURRENT REVENUE", value: MOCK_COMPANY.revenue, desc: "MRR SaaS" },
+              { label: "FUNDING REQUIRED", value: MOCK_COMPANY.required, color: "text-[#6366f1]", desc: "For scaling & marketing" },
+              { label: "CURRENT REVENUE", value: MOCK_COMPANY.revenue, desc: "MRR SaaS + Comm" },
               { label: "GROWTH RATE", value: MOCK_COMPANY.growth, color: "text-[#10b981]", desc: "Month-over-Month" },
-              { label: "ACTIVE CLINICS", value: MOCK_COMPANY.customers, desc: "Pilots & Customers" },
+              { label: "PARTNER MERCHANTS", value: MOCK_COMPANY.customers, desc: "Retail & E-comm" },
               { label: "COUNTRIES", value: MOCK_COMPANY.countries, desc: "India & UAE" },
-              { label: "ACTIVE PRODUCTS", value: MOCK_COMPANY.activeProducts, desc: "Clinical suites" },
+              { label: "ACTIVE PRODUCTS", value: MOCK_COMPANY.activeProducts, desc: "Apps & Portals" },
               { label: "BENCHMARK STAGE", value: MOCK_COMPANY.stage, desc: "Ready for Seed VCs" }
             ].map((kpi, i) => (
               <div key={i} className="bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
@@ -952,28 +470,100 @@ export default function FullProfileMock() {
             <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Founding Team</h4>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {MOCK_COMPANY.team.map((member, tIdx) => (
-              <div key={tIdx} className="space-y-3 p-5 bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-[#f5f3ff] border border-[#e0e7ff] flex items-center justify-center font-black text-[#6366f1] shadow-sm text-xs">
-                      {member.name.split(' ').map(n=>n[0]).join('')}
-                    </div>
-                    <div>
-                      <h5 className="text-xs font-black text-[#0f172a]">{member.name}</h5>
-                      <p className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest">{member.role}</p>
+          <div className="grid grid-cols-1 gap-6">
+            {MOCK_COMPANY.team.map((member, tIdx) => {
+              const isExpanded = expandedTeamBio[tIdx] || false;
+              return (
+                <div key={tIdx} className="bg-gradient-to-br from-[#f8fafc] to-[#f1f5f9] border border-[#e2e8f0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                  {/* Header Row */}
+                  <div className="p-5 pb-4">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#818cf8] flex items-center justify-center font-black text-white shadow-lg text-sm flex-shrink-0 overflow-hidden">
+                        {member.image ? (
+                          <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          member.name.split(' ').map(n=>n[0]).join('')
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h5 className="text-sm font-black text-[#0f172a]">{member.name}</h5>
+                        <p className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest mt-0.5">{member.role}</p>
+                        
+                        {/* Tagline Badges */}
+                        {member.tagline && (
+                          <div className="flex flex-wrap gap-1.5 mt-2.5">
+                            {member.tagline.split(' | ').map((tag, tagIdx) => (
+                              <span key={tagIdx} className="text-[9px] font-bold text-[#6366f1] bg-[#eef2ff] border border-[#e0e7ff] px-2 py-0.5 rounded-full">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <p className="text-xs font-semibold text-[#475569] leading-relaxed mb-4">{member.bio}</p>
+
+                  {/* Bio Section */}
+                  <div className="px-5 pb-2">
+                    <p className="text-xs font-semibold text-[#475569] leading-relaxed">
+                      {member.shortBio || member.bio}
+                    </p>
+
+                    {/* Expandable Full Bio */}
+                    {member.fullBio && member.fullBio.length > 0 && (
+                      <>
+                        <div 
+                          className="overflow-hidden transition-all duration-500 ease-in-out"
+                          style={{ 
+                            maxHeight: isExpanded ? `${member.fullBio.length * 60}px` : '0px',
+                            opacity: isExpanded ? 1 : 0 
+                          }}
+                        >
+                          <ul className="mt-3 space-y-2 border-l-2 border-[#6366f1]/20 pl-3">
+                            {member.fullBio.map((point, pIdx) => (
+                              <li key={pIdx} className="text-[11px] font-semibold text-[#475569] leading-relaxed flex items-start space-x-2">
+                                <span className="w-1 h-1 rounded-full bg-[#6366f1] mt-1.5 flex-shrink-0"></span>
+                                <span>{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <button 
+                          onClick={() => setExpandedTeamBio(prev => ({ ...prev, [tIdx]: !prev[tIdx] }))}
+                          className="mt-3 mb-1 flex items-center space-x-1.5 text-[10px] font-black text-[#6366f1] uppercase tracking-wider hover:text-[#4f46e5] transition-colors group"
+                        >
+                          <span>{isExpanded ? 'Show Less' : 'Read More'}</span>
+                          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Footer: Experience & Education Tags */}
+                  <div className="px-5 pb-5 pt-2 flex flex-wrap gap-3">
+                    {member.exp && (
+                      <div className="bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
+                        <p className="text-[9px] font-black text-[#94a3b8] uppercase tracking-widest mb-1.5">Expertise</p>
+                        <div className="flex flex-wrap gap-1">
+                          {member.exp.split(', ').map((skill, sIdx) => (
+                            <span key={sIdx} className="text-[9px] font-bold text-[#334155] bg-[#f1f5f9] px-2 py-0.5 rounded-md">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {member.edu && member.edu !== 'N/A' && (
+                      <div className="bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
+                        <p className="text-[9px] font-black text-[#94a3b8] uppercase tracking-widest mb-1">Education</p>
+                        <p className="text-[10px] font-semibold text-[#475569]">{member.edu}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                
-                <div className="bg-white border border-[#e2e8f0] rounded-xl p-3 text-[10px] font-semibold text-[#475569] space-y-1">
-                  <p><span className="text-[#0f172a] font-bold uppercase tracking-wider mr-1">Edu:</span>{member.edu}</p>
-                  <p><span className="text-[#0f172a] font-bold uppercase tracking-wider mr-1">Exp:</span>{member.exp}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -1113,10 +703,10 @@ export default function FullProfileMock() {
                 </div>
                 
                 <div>
-                  <p className="text-[10px] font-bold text-[#0f172a] mb-2 uppercase tracking-wider">Patient Therapy Sessions</p>
+                  <p className="text-[10px] font-bold text-[#0f172a] mb-2 uppercase tracking-wider">Monthly Active Transactions</p>
                   <div className="h-36 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={patientDataByYear[mapYear]} margin={{ top: 5, right: 5, bottom: 5, left: -25 }}>
+                      <AreaChart data={userDataByYear[mapYear]} margin={{ top: 5, right: 5, bottom: 5, left: -25 }}>
                         <defs>
                           <linearGradient id={`sessionGrad-${mapYear}`} x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.2}/>
@@ -1127,14 +717,14 @@ export default function FullProfileMock() {
                         <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 9}} />
                         <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 9}} />
                         <Tooltip contentStyle={{borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '10px', fontWeight: 'bold'}} />
-                        <Area type="monotone" dataKey="sessions" name="Sessions" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill={`url(#sessionGrad-${mapYear})`} />
+                        <Area type="monotone" dataKey="sessions" name="Transactions" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill={`url(#sessionGrad-${mapYear})`} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-bold text-[#0f172a] mb-2 uppercase tracking-wider">Recovery Rate vs Traditional (Joint Flex %)</p>
+                  <p className="text-[10px] font-bold text-[#0f172a] mb-2 uppercase tracking-wider">Loyalty Points Claim Rate vs Traditional</p>
                   <div className="h-36 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={recoveryDataByYear[mapYear]} margin={{ top: 5, right: 5, bottom: 5, left: -25 }}>
@@ -1142,7 +732,7 @@ export default function FullProfileMock() {
                         <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 9}} />
                         <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 9}} tickFormatter={(val) => `${val}%`} />
                         <Tooltip contentStyle={{borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '10px', fontWeight: 'bold'}} />
-                        <Line type="monotone" dataKey="oqulix" name="Oqulix VR" stroke="#10b981" strokeWidth={2} activeDot={{ r: 6 }} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="paynback" name="Paynback App" stroke="#10b981" strokeWidth={2} activeDot={{ r: 6 }} dot={{ r: 3 }} />
                         <Line type="monotone" dataKey="traditional" name="Traditional" stroke="#f43f5e" strokeWidth={1.5} strokeDasharray="3 3" dot={{ r: 2 }} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -1150,7 +740,7 @@ export default function FullProfileMock() {
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-bold text-[#0f172a] mb-2 uppercase tracking-wider">B2B Clinic Segment Split</p>
+                  <p className="text-[10px] font-bold text-[#0f172a] mb-2 uppercase tracking-wider">Partner Merchant Segments</p>
                   <div className="h-36 w-full flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -1283,11 +873,11 @@ export default function FullProfileMock() {
                   <span className="text-sm font-black text-[#0f172a]">{YEARLY_GROWTH_DATA[mapYear] ? YEARLY_GROWTH_DATA[mapYear].revenue : "0"}</span>
                 </div>
                 <div>
-                  <span className="text-[9px] text-[#64748b] font-black uppercase tracking-wider block">Active Clinics</span>
-                  <span className="text-sm font-black text-[#0f172a]">{YEARLY_GROWTH_DATA[mapYear] ? YEARLY_GROWTH_DATA[mapYear].clinics : "0"}</span>
+                  <span className="text-[9px] text-[#64748b] font-black uppercase tracking-wider block">Partner Merchants</span>
+                  <span className="text-sm font-black text-[#0f172a]">{YEARLY_GROWTH_DATA[mapYear] ? YEARLY_GROWTH_DATA[mapYear].merchants : "0"}</span>
                 </div>
                 <div>
-                  <span className="text-[9px] text-[#64748b] font-black uppercase tracking-wider block">Therapy Sessions</span>
+                  <span className="text-[9px] text-[#64748b] font-black uppercase tracking-wider block">Transactions</span>
                   <span className="text-sm font-black text-[#0f172a]">{YEARLY_GROWTH_DATA[mapYear] ? YEARLY_GROWTH_DATA[mapYear].sessions : "0"}</span>
                 </div>
               </div>
@@ -1322,8 +912,8 @@ export default function FullProfileMock() {
                   <tr>
                     <th className="p-3 text-[#0f172a]">Year</th>
                     <th className="p-3 text-[#0f172a]">ARR / Revenue</th>
-                    <th className="p-3 text-[#0f172a]">Clinics</th>
-                    <th className="p-3 text-[#0f172a]">Sessions</th>
+                    <th className="p-3 text-[#0f172a]">Merchants</th>
+                    <th className="p-3 text-[#0f172a]">Transactions</th>
                     <th className="p-3 text-[#0f172a]">Global Presence</th>
                     <th className="p-3 text-[#0f172a]">Key Milestone</th>
                   </tr>
@@ -1353,7 +943,7 @@ export default function FullProfileMock() {
                           </span>
                         </td>
                         <td className="p-3 text-xs text-[#6366f1] font-black">{rowData.revenue}</td>
-                        <td className="p-3 text-xs">{rowData.clinics}</td>
+                        <td className="p-3 text-xs">{rowData.merchants}</td>
                         <td className="p-3 text-xs">{rowData.sessions}</td>
                         <td className="p-3 text-xs text-[#06b6d4] font-bold">{activeLocNames}</td>
                         <td className="p-3 text-xs text-[#475569]">{rowData.milestone}</td>
@@ -1488,7 +1078,7 @@ export default function FullProfileMock() {
                         <span>Gross Margin</span>
                         <span className="text-[#6366f1]">{MOCK_COMPANY.businessModel.unitEconomics.grossMargin}</span>
                       </div>
-                      <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden"><div className="h-full bg-[#6366f1]" style={{width: '78%'}}></div></div>
+                      <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden"><div className="h-full bg-[#6366f1]" style={{width: '82%'}}></div></div>
                     </div>
                   </div>
                 </div>
@@ -1578,7 +1168,7 @@ export default function FullProfileMock() {
                 <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Document Vault</h4>
               </div>
               <div className="space-y-2">
-                {['Pitch Deck (B2B SaaS Focus)', 'Financial Projections (3-Year)', 'Clinical Pilot Results & Testimonials', 'Patent Application Details'].map((doc, idx) => (
+                {['Pitch Deck (Unified Rewards Focus)', 'Financial Projections (3-Year)', 'NPCI Compliance Certification & Audit', 'Patent Application Details'].map((doc, idx) => (
                   <div key={idx} className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group">
                     <span className="text-xs font-bold text-[#475569] group-hover:text-[#6366f1] flex items-center">
                       <FileText className="w-4 h-4 mr-2.5 text-[#cbd5e1] group-hover:text-[#6366f1]" />
@@ -1608,7 +1198,7 @@ export default function FullProfileMock() {
                 <span className="text-4xl font-black text-[#4f46e5]">{MOCK_COMPANY.investment.ask}</span>
               </div>
               <p className="text-xs font-semibold text-[#475569] mt-4 leading-relaxed">
-                Evaluating Seed Round subscriptions to accelerate global clinical validation and Middle East business expansion.
+                Evaluating Seed Round subscriptions to accelerate merchant acquisition flywheel and expansion of the high-yield rewards treasury network.
               </p>
             </div>
             
@@ -1670,7 +1260,7 @@ export default function FullProfileMock() {
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500"></div>
           <h2 className="text-2xl md:text-3xl font-black text-[#0f172a] mb-4 tracking-tight">Evaluate {MOCK_COMPANY.name}</h2>
           <p className="text-[#475569] mb-8 max-w-2xl mx-auto font-medium text-sm leading-relaxed">
-            Interested in the future of VR therapeutics? Request access to our full data room containing clinical results, or book an introductory call with the founding team.
+            Interested in the future of merchant payments and consumer yield? Request access to our full data room containing security audits, or book an introductory call with the founding team.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <button className="px-8 py-3.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white rounded-xl font-bold transition-all shadow-md shadow-indigo-600/10 text-xs uppercase tracking-wider">
@@ -1752,9 +1342,16 @@ export default function FullProfileMock() {
       {isEditing && (
         <ProfileEditorModal 
           data={mockState} 
-          onSave={(newData) => {
-            setMockState(newData);
-            setIsEditing(false);
+          onSave={async (newData) => {
+            try {
+              const docRef = doc(db, 'users', 'companies', 'paynback', 'all_data');
+              await setDoc(docRef, newData);
+              setMockState(newData);
+              setIsEditing(false);
+            } catch (error) {
+              console.error("Error saving to Firestore:", error);
+              alert("Failed to save changes. Please try again.");
+            }
           }} 
           onClose={() => setIsEditing(false)} 
         />
