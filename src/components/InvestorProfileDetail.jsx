@@ -11,7 +11,7 @@ export default function InvestorProfileDetail({
   onBack 
 }) {
   const [pitchMessage, setPitchMessage] = useState(
-    `Hi ${investor.contactPartner.split(' ')[0]},\n\nWe have compiled our investor-ready metrics for ${startupContext?.name || 'our startup'} on BlackWhale. Given your active thesis in ${investor.focusSectors.slice(0, 2).join(' & ')} and investment stage preference, we believe there is a strong alignment. We would love to share our pitch deck and walk you through our product category: ${startupContext?.category || 'our technology'}.\n\nLooking forward to your feedback.`
+    `Hi ${investor.contactPartner.split(' ')[0]},\n\nWe have compiled our investor-ready metrics for ${startupContext?.name || 'our startup'} on Interlix. Given your active thesis in ${investor.focusSectors.slice(0, 2).join(' & ')} and investment stage preference, we believe there is a strong alignment. We would love to share our pitch deck and walk you through our product category: ${startupContext?.category || 'our technology'}.\n\nLooking forward to your feedback.`
   );
   const [isSending, setIsSending] = useState(false);
   const [pitchSent, setPitchSent] = useState(false);

@@ -229,7 +229,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="w-full border-t border-slate-200 bg-white py-6 text-center text-[11px] text-slate-500 font-semibold">
-        <div>© 2026 BlackWhale Inc. All rights reserved. • Powered by AI Analysis</div>
+        <div>© 2026 Interlix Inc. All rights reserved. • Powered by AI Analysis</div>
       </footer>
     </div>
   );

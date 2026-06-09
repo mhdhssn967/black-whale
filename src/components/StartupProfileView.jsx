@@ -21,7 +21,7 @@ export default function StartupProfileView({
   const [inquiryModalOpen, setInquiryModalOpen] = useState(false);
   const [inquirySent, setInquirySent] = useState(false);
   const [inquiryForm, setInquiryForm] = useState({
-    message: `Hi ${startup.name} team, we are impressed by your investor profile on BlackWhale. We would love to schedule a brief 15-minute introductory call to learn more about your technology and market traction.`,
+    message: `Hi ${startup.name} team, we are impressed by your investor profile on Interlix. We would love to schedule a brief 15-minute introductory call to learn more about your technology and market traction.`,
     meetingDate: ""
   });
   const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'investors'

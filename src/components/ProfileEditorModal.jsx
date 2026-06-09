@@ -25,13 +25,13 @@ const JsonNode = ({ label, data, onChange, defaultOpen = false }) => {
     }
   };
 
-  const isPossibleImageField = typeof data === 'string' && (label === 'logo' || label === 'url' || label === 'image' || label === 'cover');
+  const isPossibleFileField = typeof data === 'string' && (label === 'logo' || label === 'url' || label === 'image' || label === 'cover' || label === 'termSheet' || label === 'document' || label === 'file');
 
   if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') {
     return (
       <div className="mb-3 w-full">
         {label && <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider block mb-1.5">{label}</label>}
-        {typeof data === 'string' && data.length > 50 && !isPossibleImageField ? (
+        {typeof data === 'string' && data.length > 50 && !isPossibleFileField ? (
           <textarea 
             value={data} 
             onChange={e => onChange(e.target.value)}
@@ -46,7 +46,7 @@ const JsonNode = ({ label, data, onChange, defaultOpen = false }) => {
               onChange={e => onChange(typeof data === 'number' ? Number(e.target.value) : typeof data === 'boolean' ? e.target.checked : e.target.value)}
               className={`w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${typeof data === 'boolean' ? 'w-5 h-5 accent-indigo-600' : ''}`}
             />
-            {isPossibleImageField && (
+            {isPossibleFileField && (
               <label className="flex-shrink-0 cursor-pointer bg-[#e0e7ff] text-[#4f46e5] hover:bg-[#c7d2fe] px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors relative flex items-center justify-center min-w-[100px]">
                 {isUploading ? (
                   <span className="animate-pulse">Uploading...</span>
@@ -57,7 +57,6 @@ const JsonNode = ({ label, data, onChange, defaultOpen = false }) => {
                 )}
                 <input 
                   type="file" 
-                  accept="image/*" 
                   className="hidden" 
                   onChange={handleFileUpload} 
                   disabled={isUploading}

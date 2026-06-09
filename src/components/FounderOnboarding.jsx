@@ -551,7 +551,7 @@ export default function FounderOnboarding({ onSubmitStartup }) {
           Startup Registration Portal
         </h2>
         <p className="text-xs text-slate-500 max-w-md mx-auto mt-2">
-          Step-by-step light-themed profile creator for the BlackWhale platform.
+          Step-by-step light-themed profile creator for the Interlix platform.
         </p>
       </div>
 
@@ -903,7 +903,7 @@ export default function FounderOnboarding({ onSubmitStartup }) {
                 <div className="space-y-1 text-slate-800">
                   <h4 className="text-sm font-black text-[#15803d] uppercase tracking-wider">Automated Scoring & Sizing</h4>
                   <p className="text-xs leading-relaxed font-semibold">
-                    BlackWhale automatically calculates standard valuation parameters, investor-readiness indexes, and market sizing maps based on the inputs you provide. 
+                    Interlix automatically calculates standard valuation parameters, investor-readiness indexes, and market sizing maps based on the inputs you provide. 
                   </p>
                   <p className="text-xs font-semibold text-[#16a34a] pt-1">
                     No manual inputs are required for this section—it will launch instantly.

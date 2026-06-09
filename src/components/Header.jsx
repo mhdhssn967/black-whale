@@ -20,7 +20,7 @@ export default function Header() {
         </div>
         <div>
           <h1 className="text-xl font-extrabold tracking-tight font-display bg-gradient-to-r from-indigo-700 via-indigo-600 to-cyan-600 bg-clip-text text-transparent m-0 leading-none">
-            BlackWhale
+            Interlix
           </h1>
           <p className="text-[10px] text-slate-500 font-semibold tracking-widest uppercase m-0 leading-none mt-1">
             Investor Platform

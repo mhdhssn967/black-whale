@@ -305,6 +305,14 @@ export const DEFAULT_MOCK_COMPANY = {
     }
   ],
 
+  // Document Vault
+  documents: [
+    { title: "Pitch Deck (Unified Rewards Focus)", document: "" },
+    { title: "Financial Projections (3-Year)", document: "" },
+    { title: "NPCI Compliance Certification & Audit", document: "" },
+    { title: "Patent Application Details", document: "" }
+  ],
+
   // Funding Request
   investment: {
     ask: "₹5 Crores",
@@ -312,6 +320,7 @@ export const DEFAULT_MOCK_COMPANY = {
     valuationPre: "₹100 Crores",
     valuationPost: "₹105 Crores",
     security: "Equity Shares",
+    termSheet: "",
     utilization: [
       { category: "Sales & Marketing", percentage: 35 },
       { category: "Operations & Team Expansion", percentage: 25 },

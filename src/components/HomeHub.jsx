@@ -18,9 +18,18 @@ export default function HomeHub() {
           </span>
         </h2>
         <p className="text-base text-slate-500 max-w-2xl mx-auto font-semibold leading-relaxed">
-          BlackWhale transforms raw startup metrics into investor-ready profiles in minutes. 
+          Interlix transforms raw startup metrics into investor-ready profiles in minutes. 
           Empowering founders with automated pitch storytelling and helping investors screen deals at scale.
         </p>
+        <div className="flex justify-center mt-8">
+          <Link
+            to="/login"
+            className="inline-flex items-center justify-center space-x-2 px-10 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:brightness-105 text-white text-[15px] font-black tracking-wider uppercase rounded-full shadow-xl shadow-emerald-500/20 transition-all duration-300"
+          >
+            <ShieldCheck className="w-5 h-5" />
+            <span>Partner Login Portal</span>
+          </Link>
+        </div>
       </div>
 
       {/* Selector Cards */}
@@ -108,16 +117,6 @@ export default function HomeHub() {
         </div>
       </div>
 
-      {/* Partner Login Pathway */}
-      <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-        <Link
-          to="/login"
-          className="inline-flex items-center justify-center space-x-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:brightness-105 text-white text-sm font-extrabold tracking-wider uppercase rounded-2xl shadow-md transition-all duration-300"
-        >
-          <ShieldCheck className="w-5 h-5" />
-          <span>Partner Login Portal</span>
-        </Link>
-      </div>
 
       {/* Platform Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center border-t border-slate-200 pt-10">

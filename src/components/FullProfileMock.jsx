@@ -649,7 +649,7 @@ export default function FullProfileMock() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <span className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest block">BlackWhale Mock Showcase</span>
+            <span className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest block">Interlix Mock Showcase</span>
             <h2 className="text-base font-black text-[#0f172a] leading-tight">Oqulix Profile Output</h2>
           </div>
         </div>

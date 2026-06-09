@@ -62,12 +62,20 @@ export default function PaynbackProfile() {
             ...member
           }));
 
+          const mergedDocuments = dbData.company.documents || DEFAULT_MOCK_COMPANY.documents;
+          const mergedInvestment = {
+            ...DEFAULT_MOCK_COMPANY.investment,
+            ...(dbData.company.investment || {})
+          };
+
           setMockState({
             ...dbData,
             company: {
               ...DEFAULT_MOCK_COMPANY,
               ...dbData.company,
-              team: mergedTeam
+              team: mergedTeam,
+              documents: mergedDocuments,
+              investment: mergedInvestment
             }
           });
         } else {
@@ -158,8 +166,8 @@ export default function PaynbackProfile() {
     <div className="fixed inset-0 bg-[#f8fafc] text-[#334155] z-50 overflow-y-auto font-sans">
       
       {/* Top Floating Navigation Bar */}
-      <div className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-[#e2e8f0] z-50 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center space-x-3">
+      <div className="sticky top-0 bg-white/95 backdrop-blur-md border-b border-[#e2e8f0] z-50 px-4 md:px-6 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between shadow-sm gap-3 md:gap-0">
+        <div className="flex items-center w-full md:w-auto space-x-3">
           <button 
             onClick={() => navigate('/')} 
             className="p-2 hover:bg-[#f1f5f9] rounded-xl transition-colors text-[#475569]"
@@ -167,28 +175,28 @@ export default function PaynbackProfile() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <span className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest block">BlackWhale Showcase</span>
+            <span className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest block">Interlix Showcase</span>
             <h2 className="text-base font-black text-[#0f172a] leading-tight">{MOCK_COMPANY.name} Profile</h2>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
           <button 
             onClick={() => setIsEditing(true)}
-            className="px-4 py-2 bg-white hover:bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
+            className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-white hover:bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] font-extrabold text-[10px] md:text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm text-center"
           >
-            Edit Profile Data
+            Edit Data
           </button>
           <button 
             onClick={() => navigate('/')}
-            className="px-4 py-2 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-600/10"
+            className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-extrabold text-[10px] md:text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-600/10 text-center"
           >
-            Exit Profile View
+            Exit Profile
           </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 flex gap-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8 flex flex-col lg:flex-row gap-6 md:gap-8">
         {/* Left Column: TOC Sidebar */}
         <div className="hidden lg:block w-60 flex-shrink-0">
           <div className="sticky top-28 bg-white border border-[#e2e8f0] p-4 rounded-3xl shadow-sm space-y-1">
@@ -1092,13 +1100,13 @@ export default function PaynbackProfile() {
                 <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Competitive Landscape</h4>
               </div>
               <div className="overflow-x-auto border border-[#e2e8f0] rounded-2xl">
-                <table className="w-full text-left text-xs font-semibold">
+                <table className="w-full text-left text-xs font-semibold min-w-[700px]">
                   <thead className="bg-[#f8fafc] border-b border-[#e2e8f0] text-[#475569] uppercase tracking-wider font-bold">
                     <tr>
-                      <th className="p-3.5 text-[#0f172a]">Company</th>
-                      <th className="p-3.5 text-[#0f172a]">Core Tech</th>
-                      <th className="p-3.5 text-[#0f172a]">Pricing</th>
-                      <th className="p-3.5 text-[#0f172a]">Edge</th>
+                      <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Company</th>
+                      <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Core Tech</th>
+                      <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Pricing</th>
+                      <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Edge</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#e2e8f0] text-[#334155]">
@@ -1168,13 +1176,17 @@ export default function PaynbackProfile() {
                 <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Document Vault</h4>
               </div>
               <div className="space-y-2">
-                {['Pitch Deck (Unified Rewards Focus)', 'Financial Projections (3-Year)', 'NPCI Compliance Certification & Audit', 'Patent Application Details'].map((doc, idx) => (
-                  <div key={idx} className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group">
+                {(MOCK_COMPANY.documents || []).map((docObj, idx) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => docObj.document && window.open(docObj.document, '_blank')}
+                    className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group"
+                  >
                     <span className="text-xs font-bold text-[#475569] group-hover:text-[#6366f1] flex items-center">
                       <FileText className="w-4 h-4 mr-2.5 text-[#cbd5e1] group-hover:text-[#6366f1]" />
-                      {doc}
+                      {docObj.title}
                     </span>
-                    <Download className="w-4 h-4 text-[#cbd5e1] group-hover:text-[#6366f1]" />
+                    <Download className={`w-4 h-4 ${docObj.document ? 'text-[#6366f1]' : 'text-[#cbd5e1] opacity-50'}`} />
                   </div>
                 ))}
               </div>
@@ -1192,14 +1204,29 @@ export default function PaynbackProfile() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-            <div className="bg-[#f5f3ff] border border-[#e0e7ff] p-6 rounded-2xl flex flex-col justify-between">
-              <div>
+            <div className="bg-[#f5f3ff] border border-[#e0e7ff] p-6 rounded-2xl flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <IndianRupee className="w-24 h-24 text-[#4f46e5]" />
+              </div>
+              <div className="relative z-10">
                 <span className="text-xs font-black text-[#4f46e5] uppercase tracking-wider block mb-2">Funding Ask</span>
                 <span className="text-4xl font-black text-[#4f46e5]">{MOCK_COMPANY.investment.ask}</span>
               </div>
-              <p className="text-xs font-semibold text-[#475569] mt-4 leading-relaxed">
-                Evaluating Seed Round subscriptions to accelerate merchant acquisition flywheel and expansion of the high-yield rewards treasury network.
-              </p>
+              <div className="relative z-10 mt-4">
+                <p className="text-xs font-semibold text-[#475569] leading-relaxed">
+                  Evaluating Seed Round subscriptions to accelerate merchant acquisition flywheel and expansion of the high-yield rewards treasury network.
+                </p>
+                {MOCK_COMPANY.investment.termSheet && (
+                  <a 
+                    href={MOCK_COMPANY.investment.termSheet} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="inline-flex items-center mt-4 text-xs font-black uppercase tracking-wider text-white bg-[#4f46e5] hover:bg-[#4338ca] px-4 py-2 rounded-xl transition-colors shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5 mr-1.5" /> Draft Term Sheet
+                  </a>
+                )}
+              </div>
             </div>
             
             <div className="bg-[#f8fafc] border border-[#e2e8f0] p-6 rounded-2xl flex flex-col justify-center space-y-4">
