@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Check, Code, User, AlertTriangle, Layers, UploadCloud } from 'lucide-react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
@@ -6,6 +6,16 @@ import { storage } from '../firebase';
 const JsonNode = ({ label, data, onChange, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [isUploading, setIsUploading] = useState(false);
+  const [localNum, setLocalNum] = useState(typeof data === 'number' ? data.toString() : '');
+
+  useEffect(() => {
+    if (typeof data === 'number') {
+      const numLocal = Number(localNum);
+      if (numLocal !== data && localNum !== '-' && !localNum.toString().endsWith('.')) {
+        setLocalNum(data.toString());
+      }
+    }
+  }, [data]);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -42,8 +52,23 @@ const JsonNode = ({ label, data, onChange, defaultOpen = false }) => {
             <input 
               type={typeof data === 'number' ? 'number' : typeof data === 'boolean' ? 'checkbox' : 'text'}
               checked={typeof data === 'boolean' ? data : undefined}
-              value={typeof data === 'boolean' ? undefined : data} 
-              onChange={e => onChange(typeof data === 'number' ? Number(e.target.value) : typeof data === 'boolean' ? e.target.checked : e.target.value)}
+              value={typeof data === 'boolean' ? undefined : (typeof data === 'number' ? localNum : data)} 
+              onWheel={(e) => e.target.blur()}
+              onChange={e => {
+                if (typeof data === 'number') {
+                  setLocalNum(e.target.value);
+                  const parsed = parseFloat(e.target.value);
+                  if (!isNaN(parsed)) {
+                    onChange(parsed);
+                  } else if (e.target.value === '') {
+                    onChange(0);
+                  }
+                } else if (typeof data === 'boolean') {
+                  onChange(e.target.checked);
+                } else {
+                  onChange(e.target.value);
+                }
+              }}
               className={`w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${typeof data === 'boolean' ? 'w-5 h-5 accent-indigo-600' : ''}`}
             />
             {isPossibleFileField && (
