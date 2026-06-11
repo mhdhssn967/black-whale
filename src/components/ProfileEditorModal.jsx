@@ -54,6 +54,11 @@ const JsonNode = ({ label, data, onChange, defaultOpen = false }) => {
               checked={typeof data === 'boolean' ? data : undefined}
               value={typeof data === 'boolean' ? undefined : (typeof data === 'number' ? localNum : data)} 
               onWheel={(e) => e.target.blur()}
+              onKeyDown={(e) => {
+                if (typeof data === 'number' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                  e.preventDefault();
+                }
+              }}
               onChange={e => {
                 if (typeof data === 'number') {
                   setLocalNum(e.target.value);
