@@ -53,19 +53,17 @@ export default function PaynbackProfile() {
         const docRef = doc(db, 'users', 'companies', 'paynback', 'all_data');
         const docSnap = await getDoc(docRef);
 
-        // If data exists AND it doesn't contain the outdated 'clinics' key, use it.
-        // Otherwise (if it's missing or has old data), overwrite it with the new schema.
-        if (docSnap.exists() && !docSnap.data().clinics) {
+        if (docSnap.exists()) {
           const dbData = docSnap.data();
-          const mergedTeam = (dbData.company.team || DEFAULT_MOCK_COMPANY.team).map(member => ({
+          const mergedTeam = (dbData.company?.team || DEFAULT_MOCK_COMPANY.team).map(member => ({
             image: "",
             ...member
           }));
 
-          const mergedDocuments = dbData.company.documents || DEFAULT_MOCK_COMPANY.documents;
+          const mergedDocuments = dbData.company?.documents || DEFAULT_MOCK_COMPANY.documents;
           const mergedInvestment = {
             ...DEFAULT_MOCK_COMPANY.investment,
-            ...(dbData.company.investment || {})
+            ...(dbData.company?.investment || {})
           };
 
           setMockState({
@@ -79,8 +77,9 @@ export default function PaynbackProfile() {
             }
           });
         } else {
-          console.log("Updating Firestore with latest data schema...");
-          const initialData = {
+          console.warn("No profile data found in Firestore. Please use the edit option to create it.");
+          // Initialize with empty/default state without writing to Firestore
+          setMockState({
             company: DEFAULT_MOCK_COMPANY,
             overview: DEFAULT_EXTENSIVE_OVERVIEW,
             photos: DEFAULT_COMPANY_PHOTOS,
@@ -90,9 +89,7 @@ export default function PaynbackProfile() {
             segments: DEFAULT_customerSegmentDataByYear,
             growth: DEFAULT_YEARLY_GROWTH_DATA,
             locations: DEFAULT_mapLocations
-          };
-          await setDoc(docRef, initialData);
-          setMockState(initialData);
+          });
         }
       } catch (error) {
         console.error("Error accessing Firestore:", error);
