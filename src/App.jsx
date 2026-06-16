@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useParams, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import HomeHub from './components/HomeHub';
@@ -9,9 +9,11 @@ import InvestorDirectory from './components/InvestorDirectory';
 import FullProfileMock from './components/FullProfileMock';
 import PaynbackProfile from './components/PaynbackProfile';
 import CompanyLogin from './components/CompanyLogin';
-import { initialStartups } from './data/mockStartups';
+import CompanyRegister from './components/CompanyRegister';
 import { generateStartupProfile } from './utils/aiGenerator';
 import { ShieldCheck, ArrowRight } from 'lucide-react';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase';
 
 const oqulixStartup = {
   id: "startup-oqulix",
@@ -56,9 +58,65 @@ const oqulixStartup = {
 };
 
 export default function App() {
-  const [startups, setStartups] = useState(initialStartups);
+  const [startups, setStartups] = useState([]);
   const [newStartupData, setNewStartupData] = useState(oqulixStartup);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAllCompanies = async () => {
+      try {
+        // Query auth collection to get all company IDs
+        const authSnap = await getDocs(collection(db, 'auth'));
+        const companyIds = [];
+        authSnap.forEach(d => {
+          if (d.data().userid) {
+            companyIds.push(d.data().userid);
+          }
+        });
+        
+        // Fallback if auth is empty or unreadable
+        if (companyIds.length === 0) companyIds.push('paynback');
+        
+        // Unique IDs only
+        const uniqueIds = [...new Set(companyIds)];
+        const loadedStartups = [];
+
+        for (const cId of uniqueIds) {
+          const docRef = doc(db, 'users', 'companies', cId, 'all_data');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const dbData = docSnap.data();
+            const comp = dbData.company || {};
+            
+            loadedStartups.push({
+              id: cId,
+              published: true, // Show in directory
+              name: comp.name || "Unknown Company",
+              category: comp.type || "Startup",
+              aiGenerated: {
+                overview: dbData.overview || comp.aiSummary || ""
+              },
+              industry: comp.industry || "Technology",
+              fundingStage: comp.stage || "Seed",
+              fundingRequirement: comp.investment?.ask || "0",
+              scorecards: {
+                marketPotential: comp.aiScore?.categories?.market || 75,
+                scalability: comp.aiScore?.categories?.product || 75,
+                innovationLevel: comp.aiScore?.categories?.team || 75,
+                readiness: comp.aiScore?.categories?.financials || 75
+              },
+              location: comp.hq || "Unknown Location",
+              logo: comp.logo || ""
+            });
+          }
+        }
+        setStartups(loadedStartups);
+      } catch (err) {
+        console.error("Error fetching companies from Firestore:", err);
+      }
+    };
+    fetchAllCompanies();
+  }, []);
 
   // Onboarding submission: stores the form data temporarily and goes to analysis route
   const handleOnboardingSubmit = (formData) => {
@@ -158,7 +216,7 @@ export default function App() {
         {/* Router View Switches */}
         <Routes>
           {/* Landing Hub */}
-          <Route path="/" element={<HomeHub />} />
+          <Route path="/" element={<HomeHub startups={startups} />} />
 
           {/* Founder Workflow */}
           <Route 
@@ -204,7 +262,7 @@ export default function App() {
             element={
               <InvestorDirectory 
                 startups={startups} 
-                onSelectStartup={(s) => navigate(`/investor/profile/${s.id}`)}
+                onSelectStartup={(s) => navigate(`/companies/${s.id}`)}
                 onToggleToFounder={() => navigate('/founder/onboarding')}
               />
             } 
@@ -215,11 +273,14 @@ export default function App() {
           {/* Login Route */}
           <Route path="/login" element={<CompanyLogin />} />
 
+          {/* Register Route */}
+          <Route path="/register" element={<CompanyRegister />} />
+
           {/* Full Mock Profile Route */}
           <Route path="/mock" element={<FullProfileMock />} />
 
-          {/* Paynback Profile Route */}
-          <Route path="/companies/paynback" element={<PaynbackProfile />} />
+          {/* Dynamic Company Profile Route */}
+          <Route path="/companies/:companyId" element={<PaynbackProfile />} />
 
           {/* Wildcard wildcard redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />

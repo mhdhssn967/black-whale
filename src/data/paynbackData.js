@@ -16,6 +16,12 @@ export const DEFAULT_MOCK_COMPANY = {
   linkedin: "",
   twitter: "",
   github: "",
+  tags: [
+    { label: "FinTech Payments", color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
+    { label: "B2B SaaS Model", color: "bg-teal-50 text-teal-700 border-teal-100" },
+    { label: "NPCI Approved", color: "bg-sky-50 text-sky-700 border-sky-100" },
+    { label: "2.5K+ Active Users", color: "bg-amber-50 text-amber-700 border-amber-100" }
+  ],
 
   // Mission & Vision
   tagline: "Spend. Earn. Grow.",
@@ -904,3 +910,240 @@ export const DEFAULT_mapLocations = {
     }
   ]
 };
+
+export const EMPTY_MOCK_COMPANY = {
+  // Basic Identity & Details
+  id: "",
+  verified: false,
+  name: "New Company",
+  logo: "",
+  cover: "",
+  type: "Startup",
+  founded: "",
+  hq: "",
+  industry: "",
+  stage: "",
+  teamSize: "0",
+  website: "",
+  linkedin: "",
+  twitter: "",
+  github: "",
+  tags: [],
+
+  // Mission & Vision
+  tagline: "",
+  vision: "",
+  mission: "",
+
+  // High-Level Financial & Traction Snapshots
+  raised: "",
+  required: "",
+  revenue: "",
+  growth: "",
+  customers: "",
+  countries: "0",
+  activeProducts: "0",
+
+  // Narratives & Advisory
+  aiSummary: "",
+
+  overview: {
+    story: "",
+    problem: "",
+    challenges: "",
+    marketGap: "",
+    solution: "",
+    advantage: ""
+  },
+
+  // Team Details
+  team: [
+    {
+      name: "Founder Name",
+      image: "",
+      role: "Founder & CEO",
+      shortBio: "",
+      fullBio: [],
+      edu: "",
+      exp: "",
+      tagline: ""
+    }
+  ],
+
+  // Advisors
+  advisors: [],
+
+  // Products List
+  products: [
+    {
+      name: "Product 1",
+      category: "",
+      overview: "",
+      audience: "",
+      features: [],
+      metrics: {
+        users: "0",
+        growth: ""
+      },
+      image: ""
+    }
+  ],
+
+  // Milestones, Partnerships & Market Dynamics
+  achievements: [],
+
+  milestones: [],
+
+  partners: [],
+
+  businessModel: {
+    overview: "",
+    streams: [],
+    unitEconomics: {
+      cac: "0",
+      ltv: "0",
+      grossMargin: "0"
+    }
+  },
+
+  market: {
+    tam: "0",
+    sam: "0",
+    som: "0",
+    cagr: "0%",
+    trends: ""
+  },
+
+  competitors: [
+    {
+      name: "Competitor 1",
+      tech: "",
+      deployment: "",
+      price: "",
+      edge: ""
+    }
+  ],
+
+  // Document Vault
+  documents: [
+    { title: "Pitch Deck", document: "" }
+  ],
+
+  // Funding Request
+  investment: {
+    ask: "0",
+    equity: "0%",
+    valuationPre: "0",
+    valuationPost: "0",
+    security: "",
+    termSheet: "",
+    utilization: [
+      { category: "R&D", percentage: 100 }
+    ],
+    expectedOutcomes: ""
+  },
+
+  // AI Score (analyst-inferred from pitch data)
+  aiScore: {
+    overall: 0,
+    categories: {
+      team: 0,
+      market: 0,
+      product: 0,
+      financials: 0
+    },
+    strengths: "",
+    weaknesses: "",
+    concerns: ""
+  }
+};
+
+export const EMPTY_EXTENSIVE_OVERVIEW = "Enter company overview here...";
+
+export const EMPTY_COMPANY_PHOTOS = [];
+
+const years = [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031];
+
+const buildEmptyRevenueData = () => {
+  const data = {};
+  years.forEach(year => {
+    data[year] = [
+      { month: "Jan", revenue: 0, expenses: 0 },
+      { month: "Feb", revenue: 0, expenses: 0 },
+      { month: "Mar", revenue: 0, expenses: 0 },
+      { month: "Apr", revenue: 0, expenses: 0 },
+      { month: "May", revenue: 0, expenses: 0 },
+      { month: "Jun", revenue: 0, expenses: 0 }
+    ];
+  });
+  return data;
+};
+
+const buildEmptyUserData = () => {
+  const data = {};
+  years.forEach(year => {
+    data[year] = [
+      { month: "Jan", sessions: 0 },
+      { month: "Feb", sessions: 0 },
+      { month: "Mar", sessions: 0 },
+      { month: "Apr", sessions: 0 },
+      { month: "May", sessions: 0 },
+      { month: "Jun", sessions: 0 }
+    ];
+  });
+  return data;
+};
+
+const buildEmptyRecoveryData = () => {
+  const data = {};
+  years.forEach(year => {
+    data[year] = [
+      { week: "Wk 1", traditional: 0, paynback: 0 },
+      { week: "Wk 2", traditional: 0, paynback: 0 },
+      { week: "Wk 3", traditional: 0, paynback: 0 },
+      { week: "Wk 4", traditional: 0, paynback: 0 }
+    ];
+  });
+  return data;
+};
+
+const buildEmptySegmentData = () => {
+  const data = {};
+  years.forEach(year => {
+    data[year] = [
+      { name: "Segment 1", value: 100 }
+    ];
+  });
+  return data;
+};
+
+const buildEmptyYearlyGrowthData = () => {
+  const data = {};
+  years.forEach(year => {
+    data[year] = {
+      year: year.toString(),
+      revenue: "0",
+      merchants: "0",
+      sessions: "0",
+      analysis: "",
+      milestone: ""
+    };
+  });
+  return data;
+};
+
+const buildEmptyMapLocations = () => {
+  const data = {};
+  years.forEach(year => {
+    data[year] = [];
+  });
+  return data;
+};
+
+export const EMPTY_revenueDataByYear = buildEmptyRevenueData();
+export const EMPTY_userDataByYear = buildEmptyUserData();
+export const EMPTY_recoveryDataByYear = buildEmptyRecoveryData();
+export const EMPTY_customerSegmentDataByYear = buildEmptySegmentData();
+export const EMPTY_YEARLY_GROWTH_DATA = buildEmptyYearlyGrowthData();
+export const EMPTY_mapLocations = buildEmptyMapLocations();
+

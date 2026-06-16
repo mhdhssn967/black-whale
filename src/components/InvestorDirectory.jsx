@@ -8,7 +8,7 @@ export default function InvestorDirectory({ startups, onSelectStartup, onToggleT
   const [search, setSearch] = useState("");
   const [selectedIndustry, setSelectedIndustry] = useState("All");
   const [selectedStage, setSelectedStage] = useState("All");
-  const [minScore, setMinScore] = useState(70);
+  const [minScore, setMinScore] = useState(0);
   const [maxFunding, setMaxFunding] = useState(100000000); // 10 Cr max limit initially
 
   const industries = [
@@ -180,8 +180,8 @@ export default function InvestorDirectory({ startups, onSelectStartup, onToggleT
               </div>
               <input
                 type="range"
-                min="50"
-                max="95"
+                min="0"
+                max="100"
                 step="1"
                 value={minScore}
                 onChange={(e) => setMinScore(parseInt(e.target.value))}
@@ -195,7 +195,7 @@ export default function InvestorDirectory({ startups, onSelectStartup, onToggleT
                 setSearch("");
                 setSelectedIndustry("All");
                 setSelectedStage("All");
-                setMinScore(70);
+                setMinScore(0);
                 setMaxFunding(100000000);
               }}
               className="w-full py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-600 hover:text-slate-900 rounded-xl transition-all shadow-sm"
@@ -247,9 +247,15 @@ export default function InvestorDirectory({ startups, onSelectStartup, onToggleT
                     {/* Top Row: Logo & Score */}
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-555 flex items-center justify-center font-black text-white text-base shadow-sm">
-                          {startup.name.substring(0, 2).toUpperCase()}
-                        </div>
+                        {startup.logo ? (
+                          <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center shadow-sm overflow-hidden border border-slate-200">
+                            <img src={startup.logo} alt={startup.name} className="w-full h-full object-contain" />
+                          </div>
+                        ) : (
+                          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center font-black text-white text-base shadow-sm">
+                            {startup.name.substring(0, 2).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <h4 className="text-sm font-bold text-slate-900 leading-tight font-display m-0 group-hover:text-indigo-600 transition-colors">
                             {startup.name}

@@ -56,8 +56,8 @@ export default function CompanyLogin() {
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <ShieldCheck className="w-24 h-24 text-white" />
           </div>
-          <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl mx-auto flex items-center justify-center mb-4 border border-white/20 relative z-10">
-            <Lock className="w-8 h-8 text-white" />
+          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-2xl mx-auto flex items-center justify-center mb-4 border border-white/20 relative z-10 p-3">
+            <img src="/interlixlogo.webp" alt="Interlix Logo" className="w-full h-full object-contain drop-shadow-md" />
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight relative z-10">Partner Access</h1>
           <p className="text-sm font-semibold text-slate-300 mt-2 relative z-10">Enter your credentials to continue.</p>

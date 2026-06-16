@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { 
   Building2, MapPin, Globe, Users, Target, Rocket, Download, ShieldCheck, 
   TrendingUp, Award, Briefcase, Zap, BarChart3, FileText, 
@@ -25,70 +25,117 @@ import {
   DEFAULT_recoveryDataByYear,
   DEFAULT_customerSegmentDataByYear,
   DEFAULT_YEARLY_GROWTH_DATA,
-  DEFAULT_mapLocations
+  DEFAULT_mapLocations,
+  EMPTY_MOCK_COMPANY,
+  EMPTY_EXTENSIVE_OVERVIEW,
+  EMPTY_COMPANY_PHOTOS,
+  EMPTY_revenueDataByYear,
+  EMPTY_userDataByYear,
+  EMPTY_recoveryDataByYear,
+  EMPTY_customerSegmentDataByYear,
+  EMPTY_YEARLY_GROWTH_DATA,
+  EMPTY_mapLocations
 } from '../data/paynbackData';
 
 import paynbackLogo from '../assets/paynback/logo.png';
 import paynbackCover from '../assets/paynback/cover.png';
 import { db } from '../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 const CHART_COLORS = ['#6366f1', '#06b6d4', '#10b981'];
 
 export default function PaynbackProfile() {
   const navigate = useNavigate();
+  const { companyId } = useParams();
+  const activeCompanyId = companyId || 'paynback';
+
   const [mockState, setMockState] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Check authentication
-    const authUser = sessionStorage.getItem('authenticatedUser');
-    if (authUser !== 'paynback') {
-      navigate('/login');
-      return;
-    }
+  // Check auth
+  const authUser = sessionStorage.getItem('authenticatedUser');
+  const isOwner = authUser === activeCompanyId;
 
+  useEffect(() => {
     const fetchOrSeedData = async () => {
       try {
-        const docRef = doc(db, 'users', 'companies', 'paynback', 'all_data');
+        const isPaynback = activeCompanyId === 'paynback';
+        const baseCompany = isPaynback ? DEFAULT_MOCK_COMPANY : EMPTY_MOCK_COMPANY;
+        const baseOverview = isPaynback ? DEFAULT_EXTENSIVE_OVERVIEW : EMPTY_EXTENSIVE_OVERVIEW;
+        const basePhotos = isPaynback ? DEFAULT_COMPANY_PHOTOS : EMPTY_COMPANY_PHOTOS;
+        const baseRevenue = isPaynback ? DEFAULT_revenueDataByYear : EMPTY_revenueDataByYear;
+        const baseUsers = isPaynback ? DEFAULT_userDataByYear : EMPTY_userDataByYear;
+        const baseRecovery = isPaynback ? DEFAULT_recoveryDataByYear : EMPTY_recoveryDataByYear;
+        const baseSegments = isPaynback ? DEFAULT_customerSegmentDataByYear : EMPTY_customerSegmentDataByYear;
+        const baseGrowth = isPaynback ? DEFAULT_YEARLY_GROWTH_DATA : EMPTY_YEARLY_GROWTH_DATA;
+        const baseLocations = isPaynback ? DEFAULT_mapLocations : EMPTY_mapLocations;
+
+        const docRef = doc(db, 'users', 'companies', activeCompanyId, 'all_data');
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const dbData = docSnap.data();
-          const mergedTeam = (dbData.company?.team || DEFAULT_MOCK_COMPANY.team).map(member => ({
+          const mergedTeam = (dbData.company?.team || baseCompany.team).map(member => ({
             image: "",
             ...member
           }));
 
-          const mergedDocuments = dbData.company?.documents || DEFAULT_MOCK_COMPANY.documents;
+          const mergedDocuments = dbData.company?.documents || baseCompany.documents;
           const mergedInvestment = {
-            ...DEFAULT_MOCK_COMPANY.investment,
+            ...baseCompany.investment,
             ...(dbData.company?.investment || {})
           };
 
           setMockState({
-            ...dbData,
             company: {
-              ...DEFAULT_MOCK_COMPANY,
+              ...baseCompany,
               ...dbData.company,
               team: mergedTeam,
               documents: mergedDocuments,
               investment: mergedInvestment
-            }
+            },
+            overview: dbData.overview || baseOverview,
+            photos: dbData.photos || basePhotos,
+            revenue: dbData.revenue || baseRevenue,
+            users: dbData.users || baseUsers,
+            recovery: dbData.recovery || baseRecovery,
+            segments: dbData.segments || baseSegments,
+            growth: dbData.growth || baseGrowth,
+            locations: dbData.locations || baseLocations
           });
         } else {
           console.warn("No profile data found in Firestore. Please use the edit option to create it.");
-          // Initialize with empty/default state without writing to Firestore
+          
+          let name = isPaynback ? "PayNback Infosolutions LLP" : "New Company";
+          if (!isPaynback) {
+            try {
+              const authQuery = query(collection(db, 'auth'), where('userid', '==', activeCompanyId));
+              const querySnapshot = await getDocs(authQuery);
+              if (!querySnapshot.empty) {
+                const authData = querySnapshot.docs[0].data();
+                if (authData.companyName) {
+                  name = authData.companyName;
+                }
+              }
+            } catch (err) {
+              console.error("Error finding company name:", err);
+            }
+          }
+
           setMockState({
-            company: DEFAULT_MOCK_COMPANY,
-            overview: DEFAULT_EXTENSIVE_OVERVIEW,
-            photos: DEFAULT_COMPANY_PHOTOS,
-            revenue: DEFAULT_revenueDataByYear,
-            users: DEFAULT_userDataByYear,
-            recovery: DEFAULT_recoveryDataByYear,
-            segments: DEFAULT_customerSegmentDataByYear,
-            growth: DEFAULT_YEARLY_GROWTH_DATA,
-            locations: DEFAULT_mapLocations
+            company: {
+              ...baseCompany,
+              name: name,
+              id: activeCompanyId.toUpperCase()
+            },
+            overview: baseOverview,
+            photos: basePhotos,
+            revenue: baseRevenue,
+            users: baseUsers,
+            recovery: baseRecovery,
+            segments: baseSegments,
+            growth: baseGrowth,
+            locations: baseLocations
           });
         }
       } catch (error) {
@@ -98,16 +145,16 @@ export default function PaynbackProfile() {
       }
     };
     fetchOrSeedData();
-  }, []);
+  }, [activeCompanyId]);
   const [isEditing, setIsEditing] = useState(false);
 
   const [mapYear, setMapYear] = useState(2026); // Set default state to current year (2026)
-  const [activeLocation, setActiveLocation] = useState({
+  const [activeLocation, setActiveLocation] = useState(activeCompanyId === 'paynback' ? {
     id: 'uae', 
     name: "UAE Office (Dubai)", 
     coordinates: [55.27, 25.20], 
     desc: "Active commercial merchant network expansion"
-  });
+  } : null);
   const [showFullOverview, setShowFullOverview] = useState(false);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [expandedTeamBio, setExpandedTeamBio] = useState({});
@@ -159,6 +206,81 @@ export default function PaynbackProfile() {
   const YEARLY_GROWTH_DATA = mockState.growth;
   const mapLocations = mockState.locations;
 
+  const isPaynback = activeCompanyId === 'paynback';
+
+  const pitchDeckDoc = MOCK_COMPANY.documents?.find?.(d => d.title === "Pitch Deck");
+  const pitchDeckUrl = pitchDeckDoc?.document;
+
+  // Section 1: Hero / Overview story and cards
+  const hasStory = isPaynback || isOwner || (EXTENSIVE_OVERVIEW && EXTENSIVE_OVERVIEW.trim() !== "" && EXTENSIVE_OVERVIEW !== "Enter company overview here......");
+  const hasVision = isOwner || (MOCK_COMPANY.vision && MOCK_COMPANY.vision.trim() !== "");
+  const hasMission = isOwner || (MOCK_COMPANY.mission && MOCK_COMPANY.mission.trim() !== "");
+  const hasTagline = isOwner || (MOCK_COMPANY.tagline && MOCK_COMPANY.tagline.trim() !== "");
+  const hasOverview = isPaynback || isOwner || hasStory || hasVision || hasMission || hasTagline;
+
+  // Section 2: Capital Deployment
+  const hasCapital = isPaynback || isOwner || 
+    ((MOCK_COMPANY.investment?.allocationReasoning && MOCK_COMPANY.investment.allocationReasoning.trim() !== "") ||
+     (MOCK_COMPANY.investment?.utilization && MOCK_COMPANY.investment.utilization.length > 0 && 
+      !(MOCK_COMPANY.investment.utilization.length === 1 && MOCK_COMPANY.investment.utilization[0].category === "R&D" && MOCK_COMPANY.investment.utilization[0].percentage === 100)));
+
+  // Section 3: Investor Snapshot
+  const hasSnapshot = isPaynback || isOwner || 
+    (YEARLY_GROWTH_DATA && Object.values(YEARLY_GROWTH_DATA).some(yr => 
+      (yr.revenue && yr.revenue !== "0" && yr.revenue !== "") ||
+      (yr.merchants && yr.merchants !== "0" && yr.merchants !== "") ||
+      (yr.sessions && yr.sessions !== "0" && yr.sessions !== "") ||
+      (yr.analysis && yr.analysis.trim() !== "")
+    ));
+
+  // Section 4: Founding Team
+  const hasTeam = isPaynback || isOwner || 
+    (MOCK_COMPANY.team && MOCK_COMPANY.team.length > 0 && 
+     !(MOCK_COMPANY.team.length === 1 && MOCK_COMPANY.team[0].name === "Founder Name" && MOCK_COMPANY.team[0].role === "Founder & CEO" && !MOCK_COMPANY.team[0].shortBio));
+
+  // Section 5: Company Gallery
+  const hasGallery = isPaynback || isOwner || (COMPANY_PHOTOS && COMPANY_PHOTOS.length > 0);
+
+  // Section 6: Traction & Map
+  const hasMapLocations = mapLocations && Object.values(mapLocations).some(arr => arr && arr.length > 0);
+  const hasChartData = (revenueDataByYear && Object.values(revenueDataByYear).some(arr => arr && arr.some(item => item.revenue > 0 || item.expenses > 0))) ||
+                       (userDataByYear && Object.values(userDataByYear).some(arr => arr && arr.some(item => item.sessions > 0)));
+  const hasTraction = isPaynback || isOwner || hasMapLocations || hasChartData;
+
+  // Section 7: Document Vault
+  const hasDocuments = isPaynback || isOwner || 
+    (MOCK_COMPANY.documents && Object.values(MOCK_COMPANY.documents).some(doc => doc && doc.url && doc.url.trim() !== ""));
+
+  // Section 8: Investment Ask
+  const hasInvestmentAsk = isPaynback || isOwner || 
+    ((MOCK_COMPANY.investment?.ask && MOCK_COMPANY.investment.ask.trim() !== "") ||
+     (MOCK_COMPANY.investment?.target && MOCK_COMPANY.investment.target.trim() !== "") ||
+     (MOCK_COMPANY.investment?.valuation && MOCK_COMPANY.investment.valuation.trim() !== "") ||
+     (MOCK_COMPANY.raised && MOCK_COMPANY.raised.trim() !== "") ||
+     (MOCK_COMPANY.required && MOCK_COMPANY.required.trim() !== ""));
+
+  // Section 5 items inside grid
+  const hasOverviewSection = isPaynback || isOwner || 
+    ((MOCK_COMPANY.overview?.story && MOCK_COMPANY.overview.story.trim() !== "") ||
+     (MOCK_COMPANY.overview?.problem && MOCK_COMPANY.overview.problem.trim() !== "") ||
+     (MOCK_COMPANY.overview?.solution && MOCK_COMPANY.overview.solution.trim() !== "") ||
+     (MOCK_COMPANY.overview?.advantage && MOCK_COMPANY.overview.advantage.trim() !== ""));
+
+  const hasProducts = isPaynback || isOwner || 
+    (MOCK_COMPANY.products && MOCK_COMPANY.products.length > 0 && 
+     !(MOCK_COMPANY.products.length === 1 && MOCK_COMPANY.products[0].name === "Product 1" && !MOCK_COMPANY.products[0].overview));
+
+  const hasBusinessModel = isPaynback || isOwner || 
+    ((MOCK_COMPANY.businessModel?.streams && MOCK_COMPANY.businessModel.streams.length > 0) ||
+     (MOCK_COMPANY.businessModel?.unitEconomics?.cac && MOCK_COMPANY.businessModel.unitEconomics.cac.trim() !== "") ||
+     (MOCK_COMPANY.businessModel?.unitEconomics?.ltv && MOCK_COMPANY.businessModel.unitEconomics.ltv.trim() !== ""));
+
+  const hasCompetitors = isPaynback || isOwner || 
+    (MOCK_COMPANY.competitors && MOCK_COMPANY.competitors.length > 0 && 
+     !(MOCK_COMPANY.competitors.length === 1 && MOCK_COMPANY.competitors[0].name === "Competitor 1" && !MOCK_COMPANY.competitors[0].tech));
+
+  const hasAIScore = isPaynback || isOwner || (MOCK_COMPANY.aiScore && MOCK_COMPANY.aiScore.overall > 0);
+
   return (
     <div className="fixed inset-0 bg-[#f8fafc] text-[#334155] z-50 overflow-y-auto font-sans">
       
@@ -178,12 +300,14 @@ export default function PaynbackProfile() {
         </div>
         
         <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
-          <button 
-            onClick={() => setIsEditing(true)}
-            className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-white hover:bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] font-extrabold text-[10px] md:text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm text-center"
-          >
-            Edit Data
-          </button>
+          {isOwner && (
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-white hover:bg-[#f8fafc] border border-[#e2e8f0] text-[#0f172a] font-extrabold text-[10px] md:text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm text-center"
+            >
+              Edit Data
+            </button>
+          )}
           <button 
             onClick={() => navigate('/')}
             className="flex-1 md:flex-none px-3 md:px-4 py-2 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-extrabold text-[10px] md:text-xs uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-600/10 text-center"
@@ -199,15 +323,15 @@ export default function PaynbackProfile() {
           <div className="sticky top-28 bg-white border border-[#e2e8f0] p-4 rounded-3xl shadow-sm space-y-1">
             <p className="text-[10px] text-[#64748b] font-black uppercase tracking-widest mb-2 border-b border-[#f1f5f9] pb-1.5">Navigate Profile</p>
             {[
-              { id: 'overview', label: 'Company Overview', icon: Building2 },
-              { id: 'capital', label: 'Capital Strategy', icon: TrendingUp },
-              { id: 'snapshot', label: 'Investor Snapshot', icon: Zap },
-              { id: 'team', label: 'Founding Team', icon: Users },
-              { id: 'gallery', label: 'Company Gallery', icon: Globe },
-              { id: 'traction', label: 'Traction & Map', icon: Activity },
-              { id: 'vault', label: 'Document Vault', icon: FileText },
-              { id: 'ask', label: 'Investment Ask', icon: Rocket }
-            ].map((item) => {
+              { id: 'overview', label: 'Company Overview', icon: Building2, visible: hasOverview },
+              { id: 'capital', label: 'Capital Strategy', icon: TrendingUp, visible: hasCapital },
+              { id: 'snapshot', label: 'Investor Snapshot', icon: Zap, visible: hasSnapshot },
+              { id: 'team', label: 'Founding Team', icon: Users, visible: hasTeam },
+              { id: 'gallery', label: 'Company Gallery', icon: Globe, visible: hasGallery },
+              { id: 'traction', label: 'Traction & Map', icon: Activity, visible: hasTraction },
+              { id: 'vault', label: 'Document Vault', icon: FileText, visible: hasDocuments },
+              { id: 'ask', label: 'Investment Ask', icon: Rocket, visible: hasInvestmentAsk }
+            ].filter(item => item.visible).map((item) => {
               const Icon = item.icon;
               const isActive = activeSection === item.id;
               return (
@@ -240,14 +364,24 @@ export default function PaynbackProfile() {
           <div id="overview" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl overflow-hidden shadow-sm">
           {/* Header Banner Background */}
           <div className="h-48 md:h-60 relative overflow-hidden">
-            <img src={MOCK_COMPANY.cover?.startsWith('http') ? MOCK_COMPANY.cover : paynbackCover} alt="Cover" className="w-full h-full object-cover" />
+            {MOCK_COMPANY.cover?.startsWith('http') ? (
+              <img src={MOCK_COMPANY.cover} alt="Cover" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-r from-slate-800 to-indigo-950"></div>
+            )}
             <div className="absolute inset-0 bg-[#0f172a]/10"></div>
           </div>
           
           <div className="px-6 md:px-8 pb-8 relative">
             <div className="flex flex-col sm:flex-row items-start gap-5 pt-6 mb-6">
               <div className="w-28 h-28 bg-white text-white rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden font-black text-3xl shadow-sm border border-slate-100">
-                <img src={MOCK_COMPANY.logo?.startsWith('http') ? MOCK_COMPANY.logo : paynbackLogo} alt="PayNback Logo" className="w-full h-full object-contain p-2" />
+                {MOCK_COMPANY.logo?.startsWith('http') ? (
+                  <img src={MOCK_COMPANY.logo} alt="Logo" className="w-full h-full object-contain p-2" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white text-3xl">
+                    {MOCK_COMPANY.name?.substring(0, 2).toUpperCase() || 'CO'}
+                  </div>
+                )}
               </div>
               <div className="space-y-4 pb-1 flex-1">
                 <div className="space-y-2">
@@ -266,26 +400,32 @@ export default function PaynbackProfile() {
                 </div>
 
                 {/* Aspect & Segment Tags */}
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { label: "FinTech Payments", color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
-                    { label: "B2B SaaS Model", color: "bg-teal-50 text-teal-700 border-teal-100" },
-                    { label: "NPCI Approved", color: "bg-sky-50 text-sky-700 border-sky-100" },
-                    { label: "Patent Pending Tech", color: "bg-amber-50 text-amber-700 border-amber-100" },
-                    { label: "Yes Bank Escrow Partner", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-                    { label: "Instant Yield Ledger", color: "bg-rose-50 text-rose-700 border-rose-100" }
-                  ].map((tag, idx) => (
-                    <span key={idx} className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md border ${tag.color}`}>
-                      {tag.label}
-                    </span>
-                  ))}
-                </div>
+                {MOCK_COMPANY.tags && MOCK_COMPANY.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {MOCK_COMPANY.tags.map((tag, idx) => (
+                      <span key={idx} className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-md border ${tag.color || 'bg-slate-50 text-slate-700 border-slate-100'}`}>
+                        {tag.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2.5 w-full sm:w-auto pt-1">
-                  <button className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center shadow-sm cursor-pointer">
-                    <Download className="w-4 h-4 mr-2 text-[#475569]" /> Pitch Deck
-                  </button>
+                  {(isPaynback || isOwner || (pitchDeckUrl && pitchDeckUrl.trim() !== "")) && (
+                    <button 
+                      onClick={() => {
+                        if (pitchDeckUrl) {
+                          window.open(pitchDeckUrl, '_blank');
+                        } else {
+                          alert("No pitch deck document uploaded yet. Please click 'Edit Data' to add it.");
+                        }
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center shadow-sm cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 mr-2 text-[#475569]" /> Pitch Deck
+                    </button>
+                  )}
                   <button className="flex-1 sm:flex-none px-6 py-2.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white border border-transparent rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center shadow-md shadow-indigo-600/10 cursor-pointer">
                     <Mail className="w-4 h-4 mr-2" /> Connect
                   </button>
@@ -316,253 +456,277 @@ export default function PaynbackProfile() {
             </div>
 
             {/* Company Overview with Read More */}
-            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl p-6 mb-6">
-              <span className="text-[10px] text-[#6366f1] font-black uppercase tracking-wider mb-2 block">Company Overview</span>
-              <div className="text-xs font-semibold text-[#475569] leading-relaxed transition-all duration-300">
-                {showFullOverview ? EXTENSIVE_OVERVIEW : `${EXTENSIVE_OVERVIEW.slice(0, 240)}...`}
+            {hasStory && (
+              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl p-6 mb-6">
+                <span className="text-[10px] text-[#6366f1] font-black uppercase tracking-wider mb-2 block">Company Overview</span>
+                <div className="text-xs font-semibold text-[#475569] leading-relaxed transition-all duration-300">
+                  {showFullOverview ? EXTENSIVE_OVERVIEW : `${EXTENSIVE_OVERVIEW.slice(0, 240)}...`}
+                </div>
+                <button 
+                  onClick={() => setShowFullOverview(!showFullOverview)} 
+                  className="mt-3 text-xs font-black text-[#6366f1] hover:text-[#4f46e5] flex items-center transition-colors focus:outline-none"
+                >
+                  {showFullOverview ? (
+                    <>Read Less <ChevronUp className="w-4 h-4 ml-1" /></>
+                  ) : (
+                    <>Read More <ChevronDown className="w-4 h-4 ml-1" /></>
+                  )}
+                </button>
               </div>
-              <button 
-                onClick={() => setShowFullOverview(!showFullOverview)} 
-                className="mt-3 text-xs font-black text-[#6366f1] hover:text-[#4f46e5] flex items-center transition-colors focus:outline-none"
-              >
-                {showFullOverview ? (
-                  <>Read Less <ChevronUp className="w-4 h-4 ml-1" /></>
-                ) : (
-                  <>Read More <ChevronDown className="w-4 h-4 ml-1" /></>
-                )}
-              </button>
-            </div>
+            )}
 
             {/* Vision Block */}
-            <div className="bg-[#f5f3ff] border border-[#ddd6fe] rounded-2xl p-6 grid md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-[10px] text-[#6366f1] font-black uppercase tracking-wider mb-1">VISION</p>
-                <p className="text-xs font-semibold text-[#475569] leading-relaxed">"{MOCK_COMPANY.vision}"</p>
+            {(hasVision || hasMission || hasTagline) && (
+              <div className={`bg-[#f5f3ff] border border-[#ddd6fe] rounded-2xl p-6 gap-6 ${
+                [hasVision, hasMission, hasTagline].filter(Boolean).length === 3 
+                  ? 'grid md:grid-cols-3' 
+                  : [hasVision, hasMission, hasTagline].filter(Boolean).length === 2 
+                    ? 'grid md:grid-cols-2' 
+                    : 'grid md:grid-cols-1'
+              }`}>
+                {hasVision && (
+                  <div>
+                    <p className="text-[10px] text-[#6366f1] font-black uppercase tracking-wider mb-1">VISION</p>
+                    <p className="text-xs font-semibold text-[#475569] leading-relaxed">"{MOCK_COMPANY.vision}"</p>
+                  </div>
+                )}
+                {hasMission && (
+                  <div>
+                    <p className="text-[10px] text-[#6366f1] font-black uppercase tracking-wider mb-1">MISSION</p>
+                    <p className="text-xs font-semibold text-[#475569] leading-relaxed">"{MOCK_COMPANY.mission}"</p>
+                  </div>
+                )}
+                {hasTagline && (
+                  <div>
+                    <p className="text-[10px] text-[#06b6d4] font-black uppercase tracking-wider mb-1">TAGLINE</p>
+                    <p className="text-sm font-black text-[#0f172a]">"{MOCK_COMPANY.tagline}"</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <p className="text-[10px] text-[#6366f1] font-black uppercase tracking-wider mb-1">MISSION</p>
-                <p className="text-xs font-semibold text-[#475569] leading-relaxed">"{MOCK_COMPANY.mission}"</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-[#06b6d4] font-black uppercase tracking-wider mb-1">TAGLINE</p>
-                <p className="text-sm font-black text-[#0f172a]">"{MOCK_COMPANY.tagline}"</p>
-              </div>
-            </div>
+            )}
 
           </div>
       </div>
 
       {/* SECTION: CAPITAL DEPLOYMENT & METRICS */}
-      <div id="capital" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-4">
-          <div className="flex items-center space-x-2">
-            <TrendingUp className="w-5 h-5 text-[#6366f1]" />
-            <h3 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Capital Deployment & Financial Strategy</h3>
-          </div>
-          <span className="text-[10px] bg-[#ecfdf5] text-[#047857] font-black px-2.5 py-1 rounded-md border border-[#d1fae5]">AUDITED Q1 2026</span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Historical Seed Deployment Details */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Seed Capital Deployment (₹1.5 Crores Raised)</h4>
-            <div className="space-y-3">
-              {[
-                { label: "Merchant Acquisition & Onboarding", val: "₹60 Lakhs", pct: "40%", desc: "B2B sales network and POS marketing collateral." },
-                { label: "Ledger R&D & Core Systems", val: "₹52.5 Lakhs", pct: "35%", desc: "Developed micro-ledger engine and UPI callback APIs." },
-                { label: "Operations & Marketing", val: "₹37.5 Lakhs", pct: "25%", desc: "Compliance registration, office lease, and user launch campaigns." }
-              ].map((item, idx) => (
-                <div key={idx} className="bg-[#f8fafc] border border-[#e2e8f0] p-4 rounded-2xl space-y-2">
-                  <div className="flex justify-between text-xs font-black">
-                    <span className="text-[#0f172a]">{item.label}</span>
-                    <span className="text-[#6366f1]">{item.val} ({item.pct})</span>
-                  </div>
-                  <div className="h-1.5 bg-[#e2e8f0] rounded-full overflow-hidden">
-                    <div className="h-full bg-[#6366f1]" style={{ width: item.pct }}></div>
-                  </div>
-                  <p className="text-[10px] text-[#475569] font-medium leading-tight">{item.desc}</p>
-                </div>
-              ))}
+      {hasCapital && (
+        <div id="capital" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 md:p-8 shadow-sm space-y-6 animate-fade-in">
+          <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-4">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5 text-[#6366f1]" />
+              <h3 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Capital Deployment & Financial Strategy</h3>
             </div>
+            <span className="text-[10px] bg-[#ecfdf5] text-[#047857] font-black px-2.5 py-1 rounded-md border border-[#d1fae5]">AUDITED Q1 2026</span>
           </div>
 
-          {/* Operational Runway & Financial Metrics */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Current Treasury & Runway Metrics</h4>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "MONTHLY BURN RATE", value: "₹4.5 Lakhs", sub: "Operational Expenses" },
-                { label: "CURRENT CASH BALANCE", value: "₹68 Lakhs", sub: "Remaining Seed Reserves" },
-                { label: "PROJECTED RUNWAY", value: "15.1 Months", sub: "Until Next Round" },
-                { label: "LTV / CAC RATIO", value: "15.0x", sub: "LTV: ₹1.8k / CAC: ₹120" }
-              ].map((metric, idx) => (
-                <div key={idx} className="bg-[#f8fafc] border border-[#e2e8f0] p-4 rounded-2xl flex flex-col justify-between min-h-[90px]">
-                  <div>
-                    <span className="text-[9px] text-[#64748b] font-black uppercase tracking-wider block">{metric.label}</span>
-                    <span className="text-base font-black text-[#0f172a] block mt-1">{metric.value}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Historical Seed Deployment Details */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Seed Capital Deployment (₹1.5 Crores Raised)</h4>
+              <div className="space-y-3">
+                {[
+                  { label: "Merchant Acquisition & Onboarding", val: "₹60 Lakhs", pct: "40%", desc: "B2B sales network and POS marketing collateral." },
+                  { label: "Ledger R&D & Core Systems", val: "₹52.5 Lakhs", pct: "35%", desc: "Developed micro-ledger engine and UPI callback APIs." },
+                  { label: "Operations & Marketing", val: "₹37.5 Lakhs", pct: "25%", desc: "Compliance registration, office lease, and user launch campaigns." }
+                ].map((item, idx) => (
+                  <div key={idx} className="bg-[#f8fafc] border border-[#e2e8f0] p-4 rounded-2xl space-y-2">
+                    <div className="flex justify-between text-xs font-black">
+                      <span className="text-[#0f172a]">{item.label}</span>
+                      <span className="text-[#6366f1]">{item.val} ({item.pct})</span>
+                    </div>
+                    <div className="h-1.5 bg-[#e2e8f0] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#6366f1]" style={{ width: item.pct }}></div>
+                    </div>
+                    <p className="text-[10px] text-[#475569] font-medium leading-tight">{item.desc}</p>
                   </div>
-                  <span className="text-[8px] text-[#475569] font-semibold mt-1 block">{metric.sub}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Strategic Outcomes Achieved with Seed Capital */}
-          <div className="space-y-4">
-            <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Deployment Milestones Achieved</h4>
-            <div className="bg-[#f5f3ff] border border-[#e0e7ff] p-5 rounded-2xl space-y-4 flex flex-col justify-between h-[288px]">
-              <div className="space-y-3 text-xs font-semibold text-[#475569]">
-                <div className="flex items-start space-x-2">
-                  <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span>Integrated multi-bank UPI settlement routing under 100ms.</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span>Onboarded 120+ retail merchants in HSR Layout and Koramangala.</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span>Scaled consumer app to 45,000 active wallets with 82% margin.</span>
-                </div>
-              </div>
-              <div className="bg-white border border-[#cbd5e1] p-3 rounded-xl text-[10px] font-bold text-[#4f46e5] flex items-center justify-between">
-                <span>Audit Document: Seed Allocation Ledger.pdf</span>
-                <Download className="w-3.5 h-3.5 cursor-pointer text-[#64748b] hover:text-[#4f46e5]" />
+                ))}
               </div>
             </div>
-          </div>
 
+            {/* Operational Runway & Financial Metrics */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Current Treasury & Runway Metrics</h4>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: "MONTHLY BURN RATE", value: "₹4.5 Lakhs", sub: "Operational Expenses" },
+                  { label: "CURRENT CASH BALANCE", value: "₹68 Lakhs", sub: "Remaining Seed Reserves" },
+                  { label: "PROJECTED RUNWAY", value: "15.1 Months", sub: "Until Next Round" },
+                  { label: "LTV / CAC RATIO", value: "15.0x", sub: "LTV: ₹1.8k / CAC: ₹120" }
+                ].map((metric, idx) => (
+                  <div key={idx} className="bg-[#f8fafc] border border-[#e2e8f0] p-4 rounded-2xl flex flex-col justify-between min-h-[90px]">
+                    <div>
+                      <span className="text-[9px] text-[#64748b] font-black uppercase tracking-wider block">{metric.label}</span>
+                      <span className="text-base font-black text-[#0f172a] block mt-1">{metric.value}</span>
+                    </div>
+                    <span className="text-[8px] text-[#475569] font-semibold mt-1 block">{metric.sub}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Strategic Outcomes Achieved with Seed Capital */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Deployment Milestones Achieved</h4>
+              <div className="bg-[#f5f3ff] border border-[#e0e7ff] p-5 rounded-2xl space-y-4 flex flex-col justify-between h-[288px]">
+                <div className="space-y-3 text-xs font-semibold text-[#475569]">
+                  <div className="flex items-start space-x-2">
+                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span>Integrated multi-bank UPI settlement routing under 100ms.</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span>Onboarded 120+ retail merchants in HSR Layout and Koramangala.</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <Check className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span>Scaled consumer app to 45,000 active wallets with 82% margin.</span>
+                  </div>
+                </div>
+                <div className="bg-white border border-[#cbd5e1] p-3 rounded-xl text-[10px] font-bold text-[#4f46e5] flex items-center justify-between">
+                  <span>Audit Document: Seed Allocation Ledger.pdf</span>
+                  <Download className="w-3.5 h-3.5 cursor-pointer text-[#64748b] hover:text-[#4f46e5]" />
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
-      </div>
+      )}
 
         {/* SECTION 2: INVESTOR SNAPSHOT */}
-        <div id="snapshot" className="scroll-mt-24 space-y-4">
-          <div className="flex items-center space-x-2">
-            <Zap className="w-5 h-5 text-[#6366f1]" />
-            <h3 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Investor Snapshot</h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: "CAPITAL RAISED", value: MOCK_COMPANY.raised, desc: "Seed Round" },
-              { label: "FUNDING REQUIRED", value: MOCK_COMPANY.required, color: "text-[#6366f1]", desc: "For scaling & marketing" },
-              { label: "CURRENT REVENUE", value: MOCK_COMPANY.revenue, desc: "MRR SaaS + Comm" },
-              { label: "GROWTH RATE", value: MOCK_COMPANY.growth, color: "text-[#10b981]", desc: "Month-over-Month" },
-              { label: "PARTNER MERCHANTS", value: MOCK_COMPANY.customers, desc: "Retail & E-comm" },
-              { label: "COUNTRIES", value: MOCK_COMPANY.countries, desc: "India & UAE" },
-              { label: "ACTIVE PRODUCTS", value: MOCK_COMPANY.activeProducts, desc: "Apps & Portals" },
-              { label: "BENCHMARK STAGE", value: MOCK_COMPANY.stage, desc: "Ready for Seed VCs" }
-            ].map((kpi, i) => (
-              <div key={i} className="bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-[10px] text-[#64748b] font-black uppercase tracking-wider mb-1">{kpi.label}</p>
-                <p className={`text-xl font-black ${kpi.color || 'text-[#0f172a]'}`}>{kpi.value}</p>
-                <p className="text-[10px] text-[#475569] font-semibold mt-1">{kpi.desc}</p>
+        {hasSnapshot && (
+          <div id="snapshot" className="scroll-mt-24 space-y-4 animate-fade-in">
+            <div className="flex items-center space-x-2">
+              <Zap className="w-5 h-5 text-[#6366f1]" />
+              <h3 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Investor Snapshot</h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: "CAPITAL RAISED", value: MOCK_COMPANY.raised, desc: "Seed Round" },
+                { label: "FUNDING REQUIRED", value: MOCK_COMPANY.required, color: "text-[#6366f1]", desc: "For scaling & marketing" },
+                { label: "CURRENT REVENUE", value: MOCK_COMPANY.revenue, desc: "MRR SaaS + Comm" },
+                { label: "GROWTH RATE", value: MOCK_COMPANY.growth, color: "text-[#10b981]", desc: "Month-over-Month" },
+                { label: "PARTNER MERCHANTS", value: MOCK_COMPANY.customers, desc: "Retail & E-comm" },
+                { label: "COUNTRIES", value: MOCK_COMPANY.countries, desc: "India & UAE" },
+                { label: "ACTIVE PRODUCTS", value: MOCK_COMPANY.activeProducts, desc: "Apps & Portals" },
+                { label: "BENCHMARK STAGE", value: MOCK_COMPANY.stage, desc: "Ready for Seed VCs" }
+              ].map((kpi, i) => (
+                <div key={i} className="bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <p className="text-[10px] text-[#64748b] font-black uppercase tracking-wider mb-1">{kpi.label}</p>
+                  <p className={`text-xl font-black ${kpi.color || 'text-[#0f172a]'}`}>{kpi.value}</p>
+                  <p className="text-[10px] text-[#475569] font-semibold mt-1">{kpi.desc}</p>
+                </div>
+              ))}
+            </div>
+            {MOCK_COMPANY.aiSummary && MOCK_COMPANY.aiSummary.trim() !== "" && (
+              <div className="bg-[#f5f3ff] border-l-4 border-l-[#6366f1] p-5 rounded-r-2xl border border-[#e0e7ff]">
+                <p className="text-xs font-semibold text-[#475569] leading-relaxed">
+                  <span className="font-black text-[#4f46e5] mr-1.5 uppercase tracking-wide">AI Summary:</span>
+                  {MOCK_COMPANY.aiSummary}
+                </p>
               </div>
-            ))}
+            )}
           </div>
-          <div className="bg-[#f5f3ff] border-l-4 border-l-[#6366f1] p-5 rounded-r-2xl border border-[#e0e7ff]">
-            <p className="text-xs font-semibold text-[#475569] leading-relaxed">
-              <span className="font-black text-[#4f46e5] mr-1.5 uppercase tracking-wide">AI Summary:</span>
-              {MOCK_COMPANY.aiSummary}
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* SECTION: FOUNDING TEAM */}
-        <div id="team" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
-          <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
-            <Users className="w-5 h-5 text-[#6366f1]" />
-            <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Founding Team</h4>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-6">
-            {MOCK_COMPANY.team.map((member, tIdx) => {
-              const isExpanded = expandedTeamBio[tIdx] || false;
-              return (
-                <div key={tIdx} className="bg-gradient-to-br from-[#f8fafc] to-[#f1f5f9] border border-[#e2e8f0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                  {/* Header Row */}
-                  <div className="p-5 pb-4">
-                    <div className="flex items-start space-x-4">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#818cf8] flex items-center justify-center font-black text-white shadow-lg text-sm flex-shrink-0 overflow-hidden">
-                        {member.image ? (
-                          <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
-                        ) : (
-                          member.name.split(' ').map(n=>n[0]).join('')
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h5 className="text-sm font-black text-[#0f172a]">{member.name}</h5>
-                        <p className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest mt-0.5">{member.role}</p>
-                        
-                        {/* Tagline Badges */}
-                        {member.tagline && (
-                          <div className="flex flex-wrap gap-1.5 mt-2.5">
-                            {member.tagline.split(' | ').map((tag, tagIdx) => (
-                              <span key={tagIdx} className="text-[9px] font-bold text-[#6366f1] bg-[#eef2ff] border border-[#e0e7ff] px-2 py-0.5 rounded-full">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+        {hasTeam && (
+          <div id="team" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6 animate-fade-in">
+            <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
+              <Users className="w-5 h-5 text-[#6366f1]" />
+              <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Founding Team</h4>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-6">
+              {MOCK_COMPANY.team.map((member, tIdx) => {
+                const isExpanded = expandedTeamBio[tIdx] || false;
+                return (
+                  <div key={tIdx} className="bg-gradient-to-br from-[#f8fafc] to-[#f1f5f9] border border-[#e2e8f0] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                    {/* Header Row */}
+                    <div className="p-5 pb-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#818cf8] flex items-center justify-center font-black text-white shadow-lg text-sm flex-shrink-0 overflow-hidden">
+                          {member.image ? (
+                            <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                          ) : (
+                            member.name.split(' ').map(n=>n[0]).join('')
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h5 className="text-sm font-black text-[#0f172a]">{member.name}</h5>
+                          <p className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest mt-0.5">{member.role}</p>
+                          
+                          {/* Tagline Badges */}
+                          {member.tagline && (
+                            <div className="flex flex-wrap gap-1.5 mt-2.5">
+                              {member.tagline.split(' | ').map((tag, tagIdx) => (
+                                <span key={tagIdx} className="text-[9px] font-bold text-[#6366f1] bg-[#eef2ff] border border-[#e0e7ff] px-2 py-0.5 rounded-full">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Bio Section */}
-                  <div className="px-5 pb-2">
-                    <p className="text-xs font-semibold text-[#475569] leading-relaxed">
-                      {member.shortBio || member.bio}
-                    </p>
+                    {/* Bio Section */}
+                    <div className="px-5 pb-2">
+                      <p className="text-xs font-semibold text-[#475569] leading-relaxed">
+                        {member.shortBio || member.bio}
+                      </p>
 
-                    {/* Expandable Full Bio */}
-                    {member.fullBio && member.fullBio.length > 0 && (
-                      <>
-                        <div 
-                          className="overflow-hidden transition-all duration-500 ease-in-out"
-                          style={{ 
-                            maxHeight: isExpanded ? `${member.fullBio.length * 60}px` : '0px',
-                            opacity: isExpanded ? 1 : 0 
-                          }}
-                        >
-                          <ul className="mt-3 space-y-2 border-l-2 border-[#6366f1]/20 pl-3">
-                            {member.fullBio.map((point, pIdx) => (
-                              <li key={pIdx} className="text-[11px] font-semibold text-[#475569] leading-relaxed flex items-start space-x-2">
-                                <span className="w-1 h-1 rounded-full bg-[#6366f1] mt-1.5 flex-shrink-0"></span>
-                                <span>{point}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                      {/* Expandable Full Bio */}
+                      {member.fullBio && member.fullBio.length > 0 && (
+                        <>
+                          <div 
+                            className="overflow-hidden transition-all duration-500 ease-in-out"
+                            style={{ 
+                              maxHeight: isExpanded ? `${member.fullBio.length * 60}px` : '0px',
+                              opacity: isExpanded ? 1 : 0 
+                            }}
+                          >
+                            <ul className="mt-3 space-y-2 border-l-2 border-[#6366f1]/20 pl-3">
+                              {member.fullBio.map((point, pIdx) => (
+                                <li key={pIdx} className="text-[11px] font-semibold text-[#475569] leading-relaxed flex items-start space-x-2">
+                                  <span className="w-1 h-1 rounded-full bg-[#6366f1] mt-1.5 flex-shrink-0"></span>
+                                  <span>{point}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
 
-                        <button 
-                          onClick={() => setExpandedTeamBio(prev => ({ ...prev, [tIdx]: !prev[tIdx] }))}
-                          className="mt-3 mb-1 flex items-center space-x-1.5 text-[10px] font-black text-[#6366f1] uppercase tracking-wider hover:text-[#4f46e5] transition-colors group"
-                        >
-                          <span>{isExpanded ? 'Show Less' : 'Read More'}</span>
-                          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Footer: Experience & Education Tags */}
-                  <div className="px-5 pb-5 pt-2 flex flex-wrap gap-3">
-                    {member.exp && (
-                      <div className="bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
-                        <p className="text-[9px] font-black text-[#94a3b8] uppercase tracking-widest mb-1.5">Expertise</p>
-                        <div className="flex flex-wrap gap-1">
-                          {member.exp.split(', ').map((skill, sIdx) => (
-                            <span key={sIdx} className="text-[9px] font-bold text-[#334155] bg-[#f1f5f9] px-2 py-0.5 rounded-md">
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {member.edu && member.edu !== 'N/A' && (
-                      <div className="bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
-                        <p className="text-[9px] font-black text-[#94a3b8] uppercase tracking-widest mb-1">Education</p>
-                        <p className="text-[10px] font-semibold text-[#475569]">{member.edu}</p>
+                          <button 
+                            onClick={() => setExpandedTeamBio(prev => ({ ...prev, [tIdx]: !prev[tIdx] }))}
+                            className="mt-3 mb-1 flex items-center space-x-1.5 text-[10px] font-black text-[#6366f1] uppercase tracking-wider hover:text-[#4f46e5] transition-colors group"
+                          >
+                            <span>{isExpanded ? 'Show Less' : 'Read More'}</span>
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        </>
+                      )}
+                    {/* Footer: Experience & Education Tags */}
+                    {((member.exp && member.exp.trim() !== "") || (member.edu && member.edu !== 'N/A' && member.edu.trim() !== "")) && (
+                      <div className="px-5 pb-5 pt-2 flex flex-wrap gap-3">
+                        {member.exp && member.exp.trim() !== "" && (
+                          <div className="bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
+                            <p className="text-[9px] font-black text-[#94a3b8] uppercase tracking-widest mb-1.5">Expertise</p>
+                            <div className="flex flex-wrap gap-1">
+                              {member.exp.split(', ').map((skill, sIdx) => (
+                                <span key={sIdx} className="text-[9px] font-bold text-[#334155] bg-[#f1f5f9] px-2 py-0.5 rounded-md">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {member.edu && member.edu !== 'N/A' && member.edu.trim() !== "" && (
+                          <div className="bg-white border border-[#e2e8f0] rounded-xl px-3 py-2 flex-1 min-w-[200px]">
+                            <p className="text-[9px] font-black text-[#94a3b8] uppercase tracking-widest mb-1">Education</p>
+                            <p className="text-[10px] font-semibold text-[#475569]">{member.edu}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -571,57 +735,61 @@ export default function PaynbackProfile() {
             })}
           </div>
         </div>
+      )}
 
         {/* SECTION: COMPANY GALLERY */}
-        <div id="gallery" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
-          <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
-            <div className="flex items-center space-x-2">
-              <Globe className="w-5 h-5 text-[#6366f1]" />
-              <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Company Gallery</h4>
-            </div>
-            <span className="text-[10px] bg-[#f1f5f9] text-[#64748b] font-bold px-2 py-1 rounded-md">{COMPANY_PHOTOS.length} Photos</span>
-          </div>
-
-          <div className="relative">
-            <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-500 overflow-hidden ${showAllPhotos ? 'max-h-[1000px]' : 'max-h-[190px]'}`}>
-              {COMPANY_PHOTOS.map((photo, pIdx) => (
-                <div 
-                  key={pIdx} 
-                  className="group relative cursor-pointer overflow-hidden rounded-2xl border border-[#e2e8f0] bg-slate-50 aspect-video md:aspect-[4/3] shadow-sm hover:shadow-md transition-all duration-300"
-                  onClick={() => setActivePhotoIndex(pIdx)}
-                >
-                  <img src={photo.url} alt={photo.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-                    <p className="text-[10px] text-white font-black uppercase tracking-wider">{photo.title}</p>
-                    <p className="text-[9px] text-[#cbd5e1] font-semibold mt-0.5 line-clamp-1">{photo.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Faded overlay at bottom of the gallery indicating there are more images */}
-            {!showAllPhotos && (
-              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none flex items-end justify-center pb-2">
+        {hasGallery && (
+          <div id="gallery" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6 animate-fade-in">
+            <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
+              <div className="flex items-center space-x-2">
+                <Globe className="w-5 h-5 text-[#6366f1]" />
+                <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Company Gallery</h4>
               </div>
-            )}
-          </div>
+              <span className="text-[10px] bg-[#f1f5f9] text-[#64748b] font-bold px-2 py-1 rounded-md">{COMPANY_PHOTOS.length} Photos</span>
+            </div>
 
-          <div className="flex justify-center pt-2">
-            <button 
-              onClick={() => setShowAllPhotos(!showAllPhotos)}
-              className="px-5 py-2 border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center"
-            >
-              {showAllPhotos ? (
-                <>Collapse Gallery <ChevronUp className="w-4 h-4 ml-1.5 text-[#64748b]" /></>
-              ) : (
-                <>Expand Gallery <ChevronDown className="w-4 h-4 ml-1.5 text-[#64748b]" /></>
+            <div className="relative">
+              <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-500 overflow-hidden ${showAllPhotos ? 'max-h-[1000px]' : 'max-h-[190px]'}`}>
+                {COMPANY_PHOTOS.map((photo, pIdx) => (
+                  <div 
+                    key={pIdx} 
+                    className="group relative cursor-pointer overflow-hidden rounded-2xl border border-[#e2e8f0] bg-slate-50 aspect-video md:aspect-[4/3] shadow-sm hover:shadow-md transition-all duration-300"
+                    onClick={() => setActivePhotoIndex(pIdx)}
+                  >
+                    <img src={photo.url} alt={photo.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
+                      <p className="text-[10px] text-white font-black uppercase tracking-wider">{photo.title}</p>
+                      <p className="text-[9px] text-[#cbd5e1] font-semibold mt-0.5 line-clamp-1">{photo.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Faded overlay at bottom of the gallery indicating there are more images */}
+              {!showAllPhotos && (
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none flex items-end justify-center pb-2">
+                </div>
               )}
-            </button>
+            </div>
+
+            <div className="flex justify-center pt-2">
+              <button 
+                onClick={() => setShowAllPhotos(!showAllPhotos)}
+                className="px-5 py-2 border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center"
+              >
+                {showAllPhotos ? (
+                  <>Collapse Gallery <ChevronUp className="w-4 h-4 ml-1.5 text-[#64748b]" /></>
+                ) : (
+                  <>Expand Gallery <ChevronDown className="w-4 h-4 ml-1.5 text-[#64748b]" /></>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* COMBINED SECTION: TRACTION, EXPANSION & PROJECTIONS DASHBOARD */}
-        <div id="traction" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 md:p-8 shadow-sm space-y-8">
+        {hasTraction && (
+          <div id="traction" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 md:p-8 shadow-sm space-y-8 animate-fade-in">
           
           {/* Header & Year Slider */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-[#f1f5f9] pb-6">
@@ -926,8 +1094,8 @@ export default function PaynbackProfile() {
                 <tbody className="divide-y divide-[#e2e8f0] text-[#334155]">
                   {[2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031].map((yr) => {
                     const isSelected = mapYear === yr;
-                    const rowData = YEARLY_GROWTH_DATA[yr];
-                    const activeLocNames = mapLocations[yr].map(l => l.id.toUpperCase()).join(", ");
+                    const rowData = YEARLY_GROWTH_DATA[yr] || {};
+                    const activeLocNames = (mapLocations[yr] || []).map(l => l.id ? l.id.toUpperCase() : '').filter(Boolean).join(", ");
                     return (
                       <tr 
                         key={yr} 
@@ -961,6 +1129,7 @@ export default function PaynbackProfile() {
           </div>
 
         </div>
+      )}
 
         {/* SECTION 5: COMPANY DETAILS & WORKSPACE */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -968,157 +1137,181 @@ export default function PaynbackProfile() {
           <div className="lg:col-span-2 space-y-8">
             
             {/* OVERVIEW */}
-            <section className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
-              <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
-                <Briefcase className="w-5 h-5 text-[#6366f1]" />
-                <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Company Overview</h4>
-              </div>
-              <div className="space-y-5">
-                <div>
-                  <h5 className="text-xs font-black text-[#64748b] uppercase tracking-wider mb-1">Company Story</h5>
-                  <p className="text-xs font-semibold text-[#475569] leading-relaxed">{MOCK_COMPANY.overview.story}</p>
+            {hasOverviewSection && (
+              <section className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
+                  <Briefcase className="w-5 h-5 text-[#6366f1]" />
+                  <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Company Overview</h4>
                 </div>
-                
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-[#fff1f2] border border-[#ffe4e6] p-5 rounded-2xl space-y-2">
-                    <div className="flex items-center space-x-2 text-[#b91c1c]">
-                      <AlertTriangle className="w-4 h-4" />
-                      <h5 className="text-xs font-black uppercase tracking-wider">The Problem</h5>
+                <div className="space-y-5">
+                  {(isOwner || (MOCK_COMPANY.overview?.story && MOCK_COMPANY.overview.story.trim() !== "")) && (
+                    <div>
+                      <h5 className="text-xs font-black text-[#64748b] uppercase tracking-wider mb-1">Company Story</h5>
+                      <p className="text-xs font-semibold text-[#475569] leading-relaxed">{MOCK_COMPANY.overview.story}</p>
                     </div>
-                    <p className="text-xs font-semibold text-[#9f1239] leading-relaxed">{MOCK_COMPANY.overview.problem}</p>
-                  </div>
+                  )}
                   
-                  <div className="bg-[#ecfdf5] border border-[#d1fae5] p-5 rounded-2xl space-y-2">
-                    <div className="flex items-center space-x-2 text-[#047857]">
-                      <Check className="w-4 h-4" />
-                      <h5 className="text-xs font-black uppercase tracking-wider">The Solution</h5>
+                  {(isOwner || (MOCK_COMPANY.overview?.problem && MOCK_COMPANY.overview.problem.trim() !== "") || (MOCK_COMPANY.overview?.solution && MOCK_COMPANY.overview.solution.trim() !== "")) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {(isOwner || (MOCK_COMPANY.overview?.problem && MOCK_COMPANY.overview.problem.trim() !== "")) && (
+                        <div className="bg-[#fff1f2] border border-[#ffe4e6] p-5 rounded-2xl space-y-2">
+                          <div className="flex items-center space-x-2 text-[#b91c1c]">
+                            <AlertTriangle className="w-4 h-4" />
+                            <h5 className="text-xs font-black uppercase tracking-wider">The Problem</h5>
+                          </div>
+                          <p className="text-xs font-semibold text-[#9f1239] leading-relaxed">{MOCK_COMPANY.overview.problem}</p>
+                        </div>
+                      )}
+                      
+                      {(isOwner || (MOCK_COMPANY.overview?.solution && MOCK_COMPANY.overview.solution.trim() !== "")) && (
+                        <div className="bg-[#ecfdf5] border border-[#d1fae5] p-5 rounded-2xl space-y-2">
+                          <div className="flex items-center space-x-2 text-[#047857]">
+                            <Check className="w-4 h-4" />
+                            <h5 className="text-xs font-black uppercase tracking-wider">The Solution</h5>
+                          </div>
+                          <p className="text-xs font-semibold text-[#065f46] leading-relaxed">{MOCK_COMPANY.overview.solution}</p>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-xs font-semibold text-[#065f46] leading-relaxed">{MOCK_COMPANY.overview.solution}</p>
-                  </div>
-                </div>
+                  )}
 
-                <div>
-                  <h5 className="text-xs font-black text-[#64748b] uppercase tracking-wider mb-1">Competitive Advantage</h5>
-                  <p className="text-xs font-semibold text-[#475569] leading-relaxed">{MOCK_COMPANY.overview.advantage}</p>
+                  {(isOwner || (MOCK_COMPANY.overview?.advantage && MOCK_COMPANY.overview.advantage.trim() !== "")) && (
+                    <div>
+                      <h5 className="text-xs font-black text-[#64748b] uppercase tracking-wider mb-1">Competitive Advantage</h5>
+                      <p className="text-xs font-semibold text-[#475569] leading-relaxed">{MOCK_COMPANY.overview.advantage}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </section>
+              </section>
+            )}
 
             {/* PRODUCTS */}
-            <section className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
-              <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
-                <Rocket className="w-5 h-5 text-[#06b6d4]" />
-                <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Products & Solutions</h4>
-              </div>
-              
-              {MOCK_COMPANY.products.map((prod, idx) => (
-                <div key={idx} className="border border-[#e2e8f0] rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-sm hover:shadow-md transition-shadow">
-                  <div className="md:w-1/3 bg-slate-100 relative min-h-[160px]">
-                    <img src={prod.image} alt={prod.name} className="absolute inset-0 w-full h-full object-cover" />
-                  </div>
-                  <div className="p-6 md:w-2/3 space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest">{prod.category}</span>
-                        <span className="text-[10px] font-black text-[#475569] bg-[#f1f5f9] px-2 py-0.5 rounded">{prod.metrics.users}</span>
-                      </div>
-                      <h5 className="text-base font-black text-[#0f172a] mt-1">{prod.name}</h5>
-                      <p className="text-xs font-semibold text-[#475569] mt-2 leading-relaxed">{prod.overview}</p>
+            {hasProducts && (
+              <section className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
+                  <Rocket className="w-5 h-5 text-[#06b6d4]" />
+                  <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Products & Solutions</h4>
+                </div>
+                
+                {MOCK_COMPANY.products.map((prod, idx) => (
+                  <div key={idx} className="border border-[#e2e8f0] rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-sm hover:shadow-md transition-shadow">
+                    <div className="md:w-1/3 bg-slate-100 relative min-h-[160px]">
+                      <img src={prod.image} alt={prod.name} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
+                    <div className="p-6 md:w-2/3 space-y-4">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black text-[#6366f1] uppercase tracking-widest">{prod.category}</span>
+                          <span className="text-[10px] font-black text-[#475569] bg-[#f1f5f9] px-2 py-0.5 rounded">{prod.metrics.users}</span>
+                        </div>
+                        <h5 className="text-base font-black text-[#0f172a] mt-1">{prod.name}</h5>
+                        <p className="text-xs font-semibold text-[#475569] mt-2 leading-relaxed">{prod.overview}</p>
+                      </div>
 
-                    <div className="space-y-1.5">
-                      <h6 className="text-[9px] font-black text-[#64748b] uppercase tracking-wider">Key Features</h6>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs font-semibold text-[#475569]">
-                        {prod.features.map((feat, fIdx) => (
-                          <div key={fIdx} className="flex items-center space-x-1.5">
-                            <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                            <span>{feat}</span>
+                      {prod.features && prod.features.length > 0 && (
+                        <div className="space-y-1.5">
+                          <h6 className="text-[9px] font-black text-[#64748b] uppercase tracking-wider">Key Features</h6>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs font-semibold text-[#475569]">
+                            {prod.features.map((feat, fIdx) => (
+                              <div key={fIdx} className="flex items-center space-x-1.5">
+                                <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                                <span>{feat}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </section>
+            )}
+
+            {/* BUSINESS MODEL */}
+            {hasBusinessModel && (
+              <section className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
+                  <IndianRupee className="w-5 h-5 text-emerald-600" />
+                  <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Business Model</h4>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {(isOwner || (MOCK_COMPANY.businessModel?.streams && MOCK_COMPANY.businessModel.streams.length > 0)) && (
+                    <div>
+                      <h5 className="text-xs font-black text-[#64748b] uppercase tracking-wider mb-3">Revenue Streams</h5>
+                      <div className="space-y-2">
+                        {MOCK_COMPANY.businessModel.streams.map((stream, sIdx) => (
+                          <div key={sIdx} className="flex items-start space-x-2.5 p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl">
+                            <ChevronRight className="w-4 h-4 text-[#6366f1] mt-0.5 flex-shrink-0" />
+                            <span className="text-xs font-semibold text-[#334155]">{stream}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </section>
-
-            {/* BUSINESS MODEL */}
-            <section className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
-              <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
-                <IndianRupee className="w-5 h-5 text-emerald-600" />
-                <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Business Model</h4>
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h5 className="text-xs font-black text-[#64748b] uppercase tracking-wider mb-3">Revenue Streams</h5>
-                  <div className="space-y-2">
-                    {MOCK_COMPANY.businessModel.streams.map((stream, sIdx) => (
-                      <div key={sIdx} className="flex items-start space-x-2.5 p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl">
-                        <ChevronRight className="w-4 h-4 text-[#6366f1] mt-0.5 flex-shrink-0" />
-                        <span className="text-xs font-semibold text-[#334155]">{stream}</span>
+                  )}
+                  
+                  {(isOwner || (MOCK_COMPANY.businessModel?.unitEconomics?.cac && MOCK_COMPANY.businessModel.unitEconomics.cac.trim() !== "")) && (
+                    <div className="space-y-4">
+                      <h5 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Unit Economics</h5>
+                      <div className="space-y-3 bg-[#f8fafc] border border-[#e2e8f0] p-4 rounded-xl">
+                        <div>
+                          <div className="flex justify-between text-[10px] font-black uppercase tracking-wide text-[#475569] mb-1">
+                            <span>CAC</span>
+                            <span className="text-rose-600">{MOCK_COMPANY.businessModel.unitEconomics.cac}</span>
+                          </div>
+                          <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden"><div className="h-full bg-rose-500" style={{width: '20%'}}></div></div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-[10px] font-black uppercase tracking-wide text-[#475569] mb-1">
+                            <span>LTV</span>
+                            <span className="text-emerald-600">{MOCK_COMPANY.businessModel.unitEconomics.ltv}</span>
+                          </div>
+                          <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden"><div className="h-full bg-[#10b981]" style={{width: '80%'}}></div></div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-[10px] font-black uppercase tracking-wide text-[#475569] mb-1">
+                            <span>Gross Margin</span>
+                            <span className="text-[#6366f1]">{MOCK_COMPANY.businessModel.unitEconomics.grossMargin}</span>
+                          </div>
+                          <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden"><div className="h-full bg-[#6366f1]" style={{width: '82%'}}></div></div>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h5 className="text-xs font-black text-[#64748b] uppercase tracking-wider">Unit Economics</h5>
-                  <div className="space-y-3 bg-[#f8fafc] border border-[#e2e8f0] p-4 rounded-xl">
-                    <div>
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-wide text-[#475569] mb-1">
-                        <span>CAC</span>
-                        <span className="text-rose-600">{MOCK_COMPANY.businessModel.unitEconomics.cac}</span>
-                      </div>
-                      <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden"><div className="h-full bg-rose-500" style={{width: '20%'}}></div></div>
                     </div>
-                    <div>
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-wide text-[#475569] mb-1">
-                        <span>LTV</span>
-                        <span className="text-emerald-600">{MOCK_COMPANY.businessModel.unitEconomics.ltv}</span>
-                      </div>
-                      <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden"><div className="h-full bg-[#10b981]" style={{width: '80%'}}></div></div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-wide text-[#475569] mb-1">
-                        <span>Gross Margin</span>
-                        <span className="text-[#6366f1]">{MOCK_COMPANY.businessModel.unitEconomics.grossMargin}</span>
-                      </div>
-                      <div className="h-2 bg-[#e2e8f0] rounded-full overflow-hidden"><div className="h-full bg-[#6366f1]" style={{width: '82%'}}></div></div>
-                    </div>
-                  </div>
+                  )}
                 </div>
-              </div>
-            </section>
+              </section>
+            )}
 
             {/* COMPETITIVE LANDSCAPE */}
-            <section className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
-              <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
-                <TrendingUp className="w-5 h-5 text-[#6366f1]" />
-                <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Competitive Landscape</h4>
-              </div>
-              <div className="overflow-x-auto border border-[#e2e8f0] rounded-2xl">
-                <table className="w-full text-left text-xs font-semibold min-w-[700px]">
-                  <thead className="bg-[#f8fafc] border-b border-[#e2e8f0] text-[#475569] uppercase tracking-wider font-bold">
-                    <tr>
-                      <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Company</th>
-                      <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Core Tech</th>
-                      <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Pricing</th>
-                      <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Edge</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#e2e8f0] text-[#334155]">
-                    {MOCK_COMPANY.competitors.map((comp, idx) => (
-                      <tr key={idx} className={`${idx === 0 ? 'bg-[#f5f3ff]' : 'hover:bg-[#f8fafc]'}`}>
-                        <td className="p-3.5 font-black text-[#0f172a]">{comp.name}</td>
-                        <td className="p-3.5">{comp.tech}</td>
-                        <td className="p-3.5 text-[#6366f1]">{comp.price}</td>
-                        <td className="p-3.5 text-[#475569]">{comp.edge}</td>
+            {hasCompetitors && (
+              <section className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
+                  <TrendingUp className="w-5 h-5 text-[#6366f1]" />
+                  <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Competitive Landscape</h4>
+                </div>
+                <div className="overflow-x-auto border border-[#e2e8f0] rounded-2xl">
+                  <table className="w-full text-left text-xs font-semibold min-w-[700px]">
+                    <thead className="bg-[#f8fafc] border-b border-[#e2e8f0] text-[#475569] uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Company</th>
+                        <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Core Tech</th>
+                        <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Pricing</th>
+                        <th className="p-3.5 text-[#0f172a] whitespace-nowrap">Edge</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+                    </thead>
+                    <tbody className="divide-y divide-[#e2e8f0] text-[#334155]">
+                      {MOCK_COMPANY.competitors.map((comp, idx) => (
+                        <tr key={idx} className={`${idx === 0 ? 'bg-[#f5f3ff]' : 'hover:bg-[#f8fafc]'}`}>
+                          <td className="p-3.5 font-black text-[#0f172a]">{comp.name}</td>
+                          <td className="p-3.5">{comp.tech}</td>
+                          <td className="p-3.5 text-[#6366f1]">{comp.price}</td>
+                          <td className="p-3.5 text-[#475569]">{comp.edge}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
 
           </div>
 
@@ -1126,45 +1319,47 @@ export default function PaynbackProfile() {
           <div className="space-y-8">
             
             {/* AI SCORE */}
-            <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
-              <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
-                <BrainCircuit className="w-5 h-5 text-[#6366f1]" />
-                <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">AI Readiness Score</h4>
-              </div>
-              
-              <div className="flex justify-center py-4">
-                <div className="w-32 h-32 rounded-full border-[8px] border-[#f1f5f9] flex items-center justify-center relative shadow-sm">
-                  {/* Gauge Ring */}
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#6366f1" strokeWidth="8" strokeDasharray="282.7" strokeDashoffset={282.7 - (282.7 * MOCK_COMPANY.aiScore.overall) / 100} transform="rotate(-90 50 50)"/>
-                  </svg>
-                  <div className="text-center">
-                    <span className="text-3xl font-black text-[#0f172a]">{MOCK_COMPANY.aiScore.overall}</span>
-                    <span className="text-[10px] block text-[#64748b] font-bold uppercase mt-0.5">Score</span>
+            {hasAIScore && (
+              <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-2 border-b border-[#f1f5f9] pb-3">
+                  <BrainCircuit className="w-5 h-5 text-[#6366f1]" />
+                  <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">AI Readiness Score</h4>
+                </div>
+                
+                <div className="flex justify-center py-4">
+                  <div className="w-32 h-32 rounded-full border-[8px] border-[#f1f5f9] flex items-center justify-center relative shadow-sm">
+                    {/* Gauge Ring */}
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="#6366f1" strokeWidth="8" strokeDasharray="282.7" strokeDashoffset={282.7 - (282.7 * MOCK_COMPANY.aiScore.overall) / 100} transform="rotate(-90 50 50)"/>
+                    </svg>
+                    <div className="text-center">
+                      <span className="text-3xl font-black text-[#0f172a]">{MOCK_COMPANY.aiScore.overall}</span>
+                      <span className="text-[10px] block text-[#64748b] font-bold uppercase mt-0.5">Score</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-3.5">
-                {Object.entries(MOCK_COMPANY.aiScore.categories).map(([category, score]) => (
-                  <div key={category}>
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-[#64748b] mb-1">
-                      <span>{category}</span>
-                      <span className="text-[#0f172a] font-bold">{score}%</span>
+                <div className="space-y-3.5">
+                  {Object.entries(MOCK_COMPANY.aiScore.categories).map(([category, score]) => (
+                    <div key={category}>
+                      <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-[#64748b] mb-1">
+                        <span>{category}</span>
+                        <span className="text-[#0f172a] font-bold">{score}%</span>
+                      </div>
+                      <div className="h-1.5 bg-[#f1f5f9] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#6366f1] rounded-full" style={{width: `${score}%`}}></div>
+                      </div>
                     </div>
-                    <div className="h-1.5 bg-[#f1f5f9] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#6366f1] rounded-full" style={{width: `${score}%`}}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
 
-              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 space-y-3 text-xs font-semibold text-[#475569]">
-                <p><span className="text-[#047857] font-black uppercase tracking-wider block mb-1">Strengths</span>{MOCK_COMPANY.aiScore.strengths}</p>
-                <div className="h-px bg-[#e2e8f0]"></div>
-                <p><span className="text-amber-600 font-black uppercase tracking-wider block mb-1">Concerns</span>{MOCK_COMPANY.aiScore.concerns}</p>
+                <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-xl p-4 space-y-3 text-xs font-semibold text-[#475569]">
+                  <p><span className="text-[#047857] font-black uppercase tracking-wider block mb-1">Strengths</span>{MOCK_COMPANY.aiScore.strengths}</p>
+                  <div className="h-px bg-[#e2e8f0]"></div>
+                  <p><span className="text-amber-600 font-black uppercase tracking-wider block mb-1">Concerns</span>{MOCK_COMPANY.aiScore.concerns}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* DOCUMENT VAULT */}
             <div id="vault" className="scroll-mt-24 bg-white border border-[#e2e8f0] rounded-3xl p-6 shadow-sm space-y-6">
@@ -1368,7 +1563,7 @@ export default function PaynbackProfile() {
           data={mockState} 
           onSave={async (newData) => {
             try {
-              const docRef = doc(db, 'users', 'companies', 'paynback', 'all_data');
+              const docRef = doc(db, 'users', 'companies', activeCompanyId, 'all_data');
               await setDoc(docRef, newData);
               setMockState(newData);
               setIsEditing(false);
