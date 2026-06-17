@@ -141,6 +141,7 @@ const DEFAULT_MOCK_COMPANY = {
     valuationPre: "₹37 Crores",
     valuationPost: "₹42 Crores",
     security: "Equity / SAFE",
+    termSheet: "",
     utilization: [
       { category: "Clinical Validation", percentage: 35 },
       { category: "Product Development", percentage: 40 },
@@ -148,6 +149,13 @@ const DEFAULT_MOCK_COMPANY = {
     ],
     expectedOutcomes: "Achieve FDA Class II clearance and scale to 50 clinics across India and UAE."
   },
+
+  documents: [
+    { title: "Pitch Deck (B2B SaaS Focus)", document: "" },
+    { title: "Financial Projections (3-Year)", document: "" },
+    { title: "Clinical Pilot Results & Testimonials", document: "" },
+    { title: "Patent Application Details", document: "" }
+  ],
 
   aiScore: {
     overall: 92,
@@ -598,6 +606,9 @@ export default function FullProfileMock() {
   const YEARLY_GROWTH_DATA = mockState.growth;
   const mapLocations = mockState.locations;
 
+  const pitchDeckDoc = MOCK_COMPANY.documents?.find?.(d => d.title === "Pitch Deck" || d.title?.toLowerCase().includes("pitch deck"));
+  const pitchDeckUrl = pitchDeckDoc?.document;
+
   const [mapYear, setMapYear] = useState(2026); // Set default state to current year (2026)
   const [activeLocation, setActiveLocation] = useState({
     id: 'singapore', 
@@ -760,9 +771,21 @@ export default function FullProfileMock() {
 
                 {/* Action Buttons */}
                 <div className="flex items-center gap-2.5 w-full sm:w-auto pt-1">
-                  <button className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center shadow-sm cursor-pointer">
-                    <Download className="w-4 h-4 mr-2 text-[#475569]" /> Pitch Deck
-                  </button>
+                  {pitchDeckUrl && pitchDeckUrl.trim() !== "" ? (
+                    <button 
+                      onClick={() => window.open(pitchDeckUrl, '_blank')}
+                      className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center shadow-sm cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 mr-2 text-[#475569]" /> Pitch Deck
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => alert("No pitch deck document uploaded yet. Please click 'Edit Profile Data' to upload it.")}
+                      className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center shadow-sm cursor-pointer opacity-60"
+                    >
+                      <Download className="w-4 h-4 mr-2 text-[#475569]" /> Pitch Deck
+                    </button>
+                  )}
                   <button className="flex-1 sm:flex-none px-6 py-2.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white border border-transparent rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center shadow-md shadow-indigo-600/10 cursor-pointer">
                     <Mail className="w-4 h-4 mr-2" /> Connect
                   </button>
@@ -1578,13 +1601,23 @@ export default function FullProfileMock() {
                 <h4 className="text-sm font-black text-[#0f172a] uppercase tracking-wider">Document Vault</h4>
               </div>
               <div className="space-y-2">
-                {['Pitch Deck (B2B SaaS Focus)', 'Financial Projections (3-Year)', 'Clinical Pilot Results & Testimonials', 'Patent Application Details'].map((doc, idx) => (
-                  <div key={idx} className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group">
+                {(MOCK_COMPANY.documents || []).map((docObj, idx) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => {
+                      if (docObj.document) {
+                        window.open(docObj.document, '_blank');
+                      } else {
+                        alert(`No document uploaded for "${docObj.title}" yet. Click 'Edit Profile Data' to upload it.`);
+                      }
+                    }}
+                    className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group"
+                  >
                     <span className="text-xs font-bold text-[#475569] group-hover:text-[#6366f1] flex items-center">
                       <FileText className="w-4 h-4 mr-2.5 text-[#cbd5e1] group-hover:text-[#6366f1]" />
-                      {doc}
+                      {docObj.title}
                     </span>
-                    <Download className="w-4 h-4 text-[#cbd5e1] group-hover:text-[#6366f1]" />
+                    <Download className={`w-4 h-4 ${docObj.document ? 'text-[#6366f1]' : 'text-[#cbd5e1] opacity-50'}`} />
                   </div>
                 ))}
               </div>
@@ -1607,9 +1640,21 @@ export default function FullProfileMock() {
                 <span className="text-xs font-black text-[#4f46e5] uppercase tracking-wider block mb-2">Funding Ask</span>
                 <span className="text-4xl font-black text-[#4f46e5]">{MOCK_COMPANY.investment.ask}</span>
               </div>
-              <p className="text-xs font-semibold text-[#475569] mt-4 leading-relaxed">
-                Evaluating Seed Round subscriptions to accelerate global clinical validation and Middle East business expansion.
-              </p>
+              <div>
+                <p className="text-xs font-semibold text-[#475569] mt-4 leading-relaxed">
+                  Evaluating Seed Round subscriptions to accelerate global clinical validation and Middle East business expansion.
+                </p>
+                {MOCK_COMPANY.investment.termSheet && (
+                  <a 
+                    href={MOCK_COMPANY.investment.termSheet} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="inline-flex items-center mt-4 text-xs font-black uppercase tracking-wider text-white bg-[#4f46e5] hover:bg-[#4338ca] px-4 py-2 rounded-xl transition-colors shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5 mr-1.5" /> Draft Term Sheet
+                  </a>
+                )}
+              </div>
             </div>
             
             <div className="bg-[#f8fafc] border border-[#e2e8f0] p-6 rounded-2xl flex flex-col justify-center space-y-4">

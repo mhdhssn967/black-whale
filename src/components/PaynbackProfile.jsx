@@ -208,7 +208,7 @@ export default function PaynbackProfile() {
 
   const isPaynback = activeCompanyId === 'paynback';
 
-  const pitchDeckDoc = MOCK_COMPANY.documents?.find?.(d => d.title === "Pitch Deck");
+  const pitchDeckDoc = MOCK_COMPANY.documents?.find?.(d => d.title === "Pitch Deck" || d.title?.toLowerCase().includes("pitch deck"));
   const pitchDeckUrl = pitchDeckDoc?.document;
 
   // Section 1: Hero / Overview story and cards
