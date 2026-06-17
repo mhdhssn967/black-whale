@@ -276,7 +276,7 @@ export default function ProfileEditorModal({ data, onSave, onClose }) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className={`flex-1 px-6 py-4 ${activeTab === 'raw' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -527,12 +527,12 @@ export default function ProfileEditorModal({ data, onSave, onClose }) {
             )}
 
             {activeTab === 'raw' && (
-              <div className="h-full flex flex-col space-y-3">
-                <div className="flex-1 w-full min-h-[400px]">
+              <div className="flex-1 flex flex-col space-y-3 min-h-[400px]">
+                <div className="flex-1 w-full flex flex-col">
                   <textarea
                     value={jsonInput || ''}
                     onChange={(e) => { setJsonInput(e.target.value); setError(''); }}
-                    className="w-full h-full p-4 bg-white border border-[#cbd5e1] text-[#0f172a] font-mono text-xs leading-relaxed rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-[#6366f1] resize-none block"
+                    className="w-full flex-1 p-4 bg-white border border-[#cbd5e1] text-[#0f172a] font-mono text-xs leading-relaxed rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-[#6366f1] resize-none block"
                     spellCheck="false"
                   />
                 </div>
