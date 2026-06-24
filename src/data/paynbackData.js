@@ -315,6 +315,7 @@ export const DEFAULT_MOCK_COMPANY = {
   documents: [
     { title: "Pitch Deck (Unified Rewards Focus)", document: "" },
     { title: "Financial Projections (3-Year)", document: "" },
+    { title: "Draft Term Sheet", document: "" },
     { title: "NPCI Compliance Certification & Audit", document: "" },
     { title: "Patent Application Details", document: "" }
   ],
@@ -1026,7 +1027,8 @@ export const EMPTY_MOCK_COMPANY = {
 
   // Document Vault
   documents: [
-    { title: "Pitch Deck", document: "" }
+    { title: "Pitch Deck", document: "" },
+    { title: "Draft Term Sheet", document: "" }
   ],
 
   // Funding Request

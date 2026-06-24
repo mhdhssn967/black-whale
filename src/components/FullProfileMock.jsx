@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import { 
   Building2, MapPin, Globe, Users, Target, Rocket, Download, ShieldCheck, 
   TrendingUp, Award, Briefcase, Zap, BarChart3, FileText, 
@@ -153,6 +154,7 @@ const DEFAULT_MOCK_COMPANY = {
   documents: [
     { title: "Pitch Deck (B2B SaaS Focus)", document: "" },
     { title: "Financial Projections (3-Year)", document: "" },
+    { title: "Draft Term Sheet", document: "" },
     { title: "Clinical Pilot Results & Testimonials", document: "" },
     { title: "Patent Application Details", document: "" }
   ],
@@ -780,7 +782,7 @@ export default function FullProfileMock() {
                     </button>
                   ) : (
                     <button 
-                      onClick={() => alert("No pitch deck document uploaded yet. Please click 'Edit Profile Data' to upload it.")}
+                      onClick={() => Swal.fire({icon: 'info', title: 'Document Not Available', text: 'No pitch deck document uploaded yet. Click "Edit Profile Data" to upload it.', confirmButtonColor: '#6366f1', confirmButtonText: 'OK'})}
                       className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center shadow-sm cursor-pointer opacity-60"
                     >
                       <Download className="w-4 h-4 mr-2 text-[#475569]" /> Pitch Deck
@@ -926,9 +928,9 @@ export default function FullProfileMock() {
                   <span>Successfully converted 6 physical therapy clinics to paying SaaS clients.</span>
                 </div>
               </div>
-              <div className="bg-white border border-[#cbd5e1] p-3 rounded-xl text-[10px] font-bold text-[#4f46e5] flex items-center justify-between">
+              <div className="bg-white border border-[#cbd5e1] p-3 rounded-xl text-[10px] font-bold text-[#4f46e5] flex items-center justify-between cursor-pointer hover:bg-[#f8fafc] transition-colors" onClick={() => Swal.fire({icon: 'info', title: 'Document Not Available', text: 'Audit Document (Seed Allocation Ledger) has not been uploaded yet.', confirmButtonColor: '#6366f1', confirmButtonText: 'OK'})}>
                 <span>Audit Document: Seed Allocation Ledger.pdf</span>
-                <Download className="w-3.5 h-3.5 cursor-pointer text-[#64748b] hover:text-[#4f46e5]" />
+                <Download className="w-3.5 h-3.5 text-[#64748b] hover:text-[#4f46e5]" />
               </div>
             </div>
           </div>
@@ -1608,7 +1610,13 @@ export default function FullProfileMock() {
                       if (docObj.document) {
                         window.open(docObj.document, '_blank');
                       } else {
-                        alert(`No document uploaded for "${docObj.title}" yet. Click 'Edit Profile Data' to upload it.`);
+                        Swal.fire({
+                          icon: 'info',
+                          title: 'Document Not Available',
+                          text: `"${docObj.title}" has not been uploaded yet.`,
+                          confirmButtonColor: '#6366f1',
+                          confirmButtonText: 'OK'
+                        });
                       }
                     }}
                     className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group"
@@ -1620,6 +1628,40 @@ export default function FullProfileMock() {
                     <Download className={`w-4 h-4 ${docObj.document ? 'text-[#6366f1]' : 'text-[#cbd5e1] opacity-50'}`} />
                   </div>
                 ))}
+                {MOCK_COMPANY.investment?.termSheet && (
+                  <div 
+                    key="termsheet" 
+                    onClick={() => window.open(MOCK_COMPANY.investment.termSheet, '_blank')}
+                    className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group"
+                  >
+                    <span className="text-xs font-bold text-[#475569] group-hover:text-[#6366f1] flex items-center">
+                      <FileText className="w-4 h-4 mr-2.5 text-[#cbd5e1] group-hover:text-[#6366f1]" />
+                      Draft Term Sheet
+                    </span>
+                    <Download className="w-4 h-4 text-[#6366f1]" />
+                  </div>
+                )}
+                {!MOCK_COMPANY.investment?.termSheet && (
+                  <div 
+                    key="termsheet-empty"
+                    onClick={() => {
+                      Swal.fire({
+                        icon: 'info',
+                        title: 'Document Not Available',
+                        text: '"Draft Term Sheet" has not been uploaded yet.',
+                        confirmButtonColor: '#6366f1',
+                        confirmButtonText: 'OK'
+                      });
+                    }}
+                    className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group"
+                  >
+                    <span className="text-xs font-bold text-[#475569] group-hover:text-[#6366f1] flex items-center">
+                      <FileText className="w-4 h-4 mr-2.5 text-[#cbd5e1] group-hover:text-[#6366f1]" />
+                      Draft Term Sheet
+                    </span>
+                    <Download className="w-4 h-4 text-[#cbd5e1] opacity-50" />
+                  </div>
+                )}
               </div>
             </div>
 

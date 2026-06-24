@@ -162,13 +162,37 @@ const JsonNode = ({ label, data, onChange, defaultOpen = false }) => {
   return null;
 };
 
+const normalizeInitialData = (incoming) => {
+  const company = incoming.company || {};
+  const initialDocs = incoming.documents ? [...incoming.documents] : (company.documents ? [...company.documents] : []);
+  const termSheetUrl = company.investment?.termSheet || '';
+  const hasTermSheetDoc = initialDocs.some(doc => doc.title?.toLowerCase().includes('term sheet'));
+  const documents = [...initialDocs];
+
+  if (!hasTermSheetDoc) {
+    documents.unshift({ title: 'Draft Term Sheet', document: termSheetUrl });
+  }
+
+  return {
+    ...incoming,
+    documents,
+    company: {
+      ...company,
+      documents,
+      investment: {
+        ...company.investment,
+        termSheet: termSheetUrl
+      }
+    }
+  };
+};
+
 export default function ProfileEditorModal({ data, onSave, onClose }) {
   const [activeTab, setActiveTab] = useState('advanced');
-  const [advancedData, setAdvancedData] = useState(data);
-  const [jsonInput, setJsonInput] = useState(JSON.stringify(data, null, 2));
+  const [advancedData, setAdvancedData] = useState(normalizeInitialData(data));
+  const [jsonInput, setJsonInput] = useState(JSON.stringify(normalizeInitialData(data), null, 2));
   const [error, setError] = useState('');
 
-  const [uploadingTermSheet, setUploadingTermSheet] = useState(false);
   const [uploadingDocIndex, setUploadingDocIndex] = useState(null);
 
   const uploadFileToStorage = async (file, pathPrefix = 'documents') => {
@@ -177,31 +201,22 @@ export default function ProfileEditorModal({ data, onSave, onClose }) {
     return await getDownloadURL(storageRef);
   };
 
-  const handleTermSheetChange = (url) => {
-    setAdvancedData(prev => {
-      const company = prev.company || {};
-      const investment = company.investment || {};
-      return {
-        ...prev,
-        company: {
-          ...company,
-          investment: {
-            ...investment,
-            termSheet: url
-          }
-        }
-      };
-    });
-  };
-
   const handleDocumentsChange = (newDocs) => {
+    const termSheetDoc = newDocs.find(doc => doc.title?.toLowerCase().includes('term sheet'));
+    const termSheetUrl = termSheetDoc?.document || '';
+
     setAdvancedData(prev => {
       const company = prev.company || {};
       return {
         ...prev,
+        documents: newDocs,
         company: {
           ...company,
-          documents: newDocs
+          documents: newDocs,
+          investment: {
+            ...company.investment,
+            termSheet: termSheetUrl
+          }
         }
       };
     });
@@ -333,175 +348,104 @@ export default function ProfileEditorModal({ data, onSave, onClose }) {
                     </div>
                   </div>
 
-                  <div className="border-t border-[#f1f5f9] pt-6 space-y-6">
-                    {/* Term Sheet Section */}
-                    <div>
-                      <h4 className="text-xs font-black text-[#475569] uppercase tracking-wider mb-3">Draft Term Sheet</h4>
-                      <div className="p-4 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-indigo-100 text-[#4f46e5] rounded-lg">
-                            <FileText className="w-5 h-5" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-[#0f172a] truncate">Draft Term Sheet Document</p>
-                            {advancedData.company?.investment?.termSheet ? (
-                              <a 
-                                href={advancedData.company.investment.termSheet} 
-                                target="_blank" 
-                                rel="noreferrer" 
-                                className="text-[11px] font-semibold text-[#6366f1] hover:underline break-all block mt-0.5"
-                              >
-                                View Current Document
-                              </a>
-                            ) : (
-                              <p className="text-[11px] font-medium text-[#64748b] mt-0.5">No term sheet uploaded yet.</p>
-                            )}
-                          </div>
-                        </div>
+                  <div className="border-t border-[#f1f5f9] pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-xs font-black text-[#475569] uppercase tracking-wider">Pitch Deck & Additional Documents</h4>
+                      <button 
+                        onClick={() => {
+                          const currentDocs = advancedData.documents || advancedData.company?.documents || [];
+                          handleDocumentsChange([...currentDocs, { title: 'New Document', document: '' }]);
+                        }}
+                        className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center shadow-sm"
+                      >
+                        <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Document
+                      </button>
+                    </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
-                          {uploadingTermSheet ? (
-                            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm">
-                              <span className="animate-pulse">Uploading...</span>
-                            </div>
-                          ) : (
-                            <>
-                              <label className="cursor-pointer bg-[#6366f1] hover:bg-[#4f46e5] text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors flex items-center shadow-sm">
-                                <UploadCloud className="w-4 h-4 mr-1.5" /> Upload File
+                    <div className="space-y-4">
+                      {((advancedData.documents || advancedData.company?.documents || [])).length === 0 ? (
+                        <div className="text-center py-8 border border-dashed border-[#cbd5e1] rounded-2xl bg-slate-50/50">
+                          <FileText className="w-8 h-8 text-[#94a3b8] mx-auto mb-2" />
+                          <p className="text-xs font-bold text-[#64748b]">No additional documents yet.</p>
+                          <p className="text-[10px] text-[#94a3b8] font-medium mt-0.5">Click "Add Document" to start building your vault.</p>
+                        </div>
+                      ) : (
+                        (advancedData.documents || advancedData.company?.documents || []).map((docObj, idx) => (
+                          <div key={idx} className="p-4 bg-white border border-[#e2e8f0] rounded-xl shadow-sm space-y-4">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="flex-1 space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Document Title</label>
                                 <input 
-                                  type="file" 
-                                  className="hidden" 
-                                  onChange={async (e) => {
-                                    const file = e.target.files[0];
-                                    if (!file) return;
-                                    setUploadingTermSheet(true);
-                                    try {
-                                      const url = await uploadFileToStorage(file, 'termsheets');
-                                      handleTermSheetChange(url);
-                                    } catch (err) {
-                                      alert("Failed to upload: " + err.message);
-                                    } finally {
-                                      setUploadingTermSheet(false);
-                                    }
-                                  }}
+                                  type="text" 
+                                  value={docObj.title || ''} 
+                                  placeholder="e.g. Pitch Deck, Financial Plan, Draft Term Sheet"
+                                  onChange={(e) => {
+                                    const newDocs = [...(advancedData.documents || advancedData.company?.documents || [])];
+                                    newDocs[idx] = { ...newDocs[idx], title: e.target.value };
+                                    handleDocumentsChange(newDocs);
+                                  }} 
+                                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 animate-none" 
                                 />
-                              </label>
-                              {advancedData.company?.investment?.termSheet && (
+                              </div>
+
+                              <div className="flex items-end gap-2 self-stretch md:self-auto justify-end shrink-0">
+                                <div className="flex-1 md:flex-none">
+                                  {uploadingDocIndex === idx ? (
+                                    <div className="flex items-center justify-center space-x-2 text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm min-w-[120px]">
+                                      <span className="animate-pulse">Uploading...</span>
+                                    </div>
+                                  ) : (
+                                    <label className="cursor-pointer bg-[#e0e7ff] text-[#4f46e5] hover:bg-[#c7d2fe] px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors flex items-center justify-center min-w-[120px]">
+                                      <UploadCloud className="w-4 h-4 mr-1.5" /> {docObj.document ? 'Re-upload' : 'Upload'}
+                                      <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        onChange={async (e) => {
+                                          const file = e.target.files[0];
+                                          if (!file) return;
+                                          setUploadingDocIndex(idx);
+                                          try {
+                                            const url = await uploadFileToStorage(file, 'documents');
+                                            const newDocs = [...(advancedData.documents || advancedData.company?.documents || [])];
+                                            newDocs[idx] = { ...newDocs[idx], document: url };
+                                            handleDocumentsChange(newDocs);
+                                          } catch (err) {
+                                            alert("Failed to upload: " + err.message);
+                                          } finally {
+                                            setUploadingDocIndex(null);
+                                          }
+                                        }}
+                                      />
+                                    </label>
+                                  )}
+                                </div>
+
                                 <button 
-                                  onClick={() => handleTermSheetChange('')} 
+                                  onClick={() => {
+                                    const newDocs = (advancedData.documents || advancedData.company?.documents || []).filter((_, i) => i !== idx);
+                                    handleDocumentsChange(newDocs);
+                                  }}
                                   className="px-4 py-2.5 border border-red-200 hover:bg-red-50 text-red-600 rounded-xl text-xs font-black uppercase tracking-wider transition-colors flex items-center"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Other Vault Documents Section */}
-                    <div className="border-t border-[#f1f5f9] pt-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-xs font-black text-[#475569] uppercase tracking-wider">Pitch Deck & Additional Documents</h4>
-                        <button 
-                          onClick={() => {
-                            const currentDocs = advancedData.company?.documents || [];
-                            handleDocumentsChange([...currentDocs, { title: 'New Document', document: '' }]);
-                          }}
-                          className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center shadow-sm"
-                        >
-                          <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Document
-                        </button>
-                      </div>
-
-                      <div className="space-y-4">
-                        {(advancedData.company?.documents || []).length === 0 ? (
-                          <div className="text-center py-8 border border-dashed border-[#cbd5e1] rounded-2xl bg-slate-50/50">
-                            <FileText className="w-8 h-8 text-[#94a3b8] mx-auto mb-2" />
-                            <p className="text-xs font-bold text-[#64748b]">No additional documents yet.</p>
-                            <p className="text-[10px] text-[#94a3b8] font-medium mt-0.5">Click "Add Document" to start building your vault.</p>
-                          </div>
-                        ) : (
-                          (advancedData.company.documents).map((docObj, idx) => (
-                            <div key={idx} className="p-4 bg-white border border-[#e2e8f0] rounded-xl shadow-sm space-y-4">
-                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <div className="flex-1 space-y-1.5">
-                                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Document Title</label>
-                                  <input 
-                                    type="text" 
-                                    value={docObj.title || ''} 
-                                    placeholder="e.g. Pitch Deck, Financial Plan"
-                                    onChange={(e) => {
-                                      const newDocs = [...(advancedData.company.documents || [])];
-                                      newDocs[idx] = { ...newDocs[idx], title: e.target.value };
-                                      handleDocumentsChange(newDocs);
-                                    }} 
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 animate-none" 
-                                  />
-                                </div>
-
-                                <div className="flex items-end gap-2 self-stretch md:self-auto justify-end shrink-0">
-                                  <div className="flex-1 md:flex-none">
-                                    {uploadingDocIndex === idx ? (
-                                      <div className="flex items-center justify-center space-x-2 text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm min-w-[120px]">
-                                        <span className="animate-pulse">Uploading...</span>
-                                      </div>
-                                    ) : (
-                                      <label className="cursor-pointer bg-[#e0e7ff] text-[#4f46e5] hover:bg-[#c7d2fe] px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors flex items-center justify-center min-w-[120px]">
-                                        <UploadCloud className="w-4 h-4 mr-1.5" /> {docObj.document ? 'Re-upload' : 'Upload'}
-                                        <input 
-                                          type="file" 
-                                          className="hidden" 
-                                          onChange={async (e) => {
-                                            const file = e.target.files[0];
-                                            if (!file) return;
-                                            setUploadingDocIndex(idx);
-                                            try {
-                                              const url = await uploadFileToStorage(file, 'documents');
-                                              const newDocs = [...(advancedData.company.documents || [])];
-                                              newDocs[idx] = { ...newDocs[idx], document: url };
-                                              handleDocumentsChange(newDocs);
-                                            } catch (err) {
-                                              alert("Failed to upload: " + err.message);
-                                            } finally {
-                                              setUploadingDocIndex(null);
-                                            }
-                                          }}
-                                        />
-                                      </label>
-                                    )}
-                                  </div>
-
-                                  <button 
-                                    onClick={() => {
-                                      const newDocs = (advancedData.company.documents || []).filter((_, i) => i !== idx);
-                                      handleDocumentsChange(newDocs);
-                                    }}
-                                    className="px-4 py-2.5 border border-red-200 hover:bg-red-50 text-red-600 rounded-xl text-xs font-black uppercase tracking-wider transition-colors flex items-center"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </div>
                               </div>
-
-                              {docObj.document && (
-                                <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs font-medium text-[#475569]">
-                                  <span className="truncate max-w-[80%] break-all">Link: <a href={docObj.document} target="_blank" rel="noreferrer" className="text-[#6366f1] hover:underline font-semibold">{docObj.document}</a></span>
-                                  <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">Active Link</span>
-                                </div>
-                              )}
                             </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
 
+                            {docObj.document && (
+                              <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs font-medium text-[#475569]">
+                                <span className="truncate max-w-[80%] break-all">Link: <a href={docObj.document} target="_blank" rel="noreferrer" className="text-[#6366f1] hover:underline font-semibold">{docObj.document}</a></span>
+                                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-wider shrink-0 ml-2">Active Link</span>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
-
             {activeTab === 'advanced' && (
               <div className="space-y-1">
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-4 border-b border-slate-200 pb-2">Root Objects & Collections</p>

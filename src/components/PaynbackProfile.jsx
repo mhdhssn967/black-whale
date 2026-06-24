@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import { 
   Building2, MapPin, Globe, Users, Target, Rocket, Download, ShieldCheck, 
   TrendingUp, Award, Briefcase, Zap, BarChart3, FileText, 
@@ -418,7 +419,7 @@ export default function PaynbackProfile() {
                         if (pitchDeckUrl) {
                           window.open(pitchDeckUrl, '_blank');
                         } else {
-                          alert("No pitch deck document uploaded yet. Please click 'Edit Data' to add it.");
+                          Swal.fire({icon: 'info', title: 'Document Not Available', text: 'No pitch deck document uploaded yet. Click "Edit Data" to add it.', confirmButtonColor: '#6366f1', confirmButtonText: 'OK'});
                         }
                       }}
                       className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-[#cbd5e1] hover:bg-[#f8fafc] text-[#334155] rounded-xl font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center shadow-sm cursor-pointer"
@@ -583,9 +584,9 @@ export default function PaynbackProfile() {
                     <span>Scaled consumer app to 45,000 active wallets with 82% margin.</span>
                   </div>
                 </div>
-                <div className="bg-white border border-[#cbd5e1] p-3 rounded-xl text-[10px] font-bold text-[#4f46e5] flex items-center justify-between">
+                <div className="bg-white border border-[#cbd5e1] p-3 rounded-xl text-[10px] font-bold text-[#4f46e5] flex items-center justify-between cursor-pointer hover:bg-[#f8fafc] transition-colors" onClick={() => Swal.fire({icon: 'info', title: 'Document Not Available', text: 'Audit Document (Seed Allocation Ledger) has not been uploaded yet.', confirmButtonColor: '#6366f1', confirmButtonText: 'OK'})}>
                   <span>Audit Document: Seed Allocation Ledger.pdf</span>
-                  <Download className="w-3.5 h-3.5 cursor-pointer text-[#64748b] hover:text-[#4f46e5]" />
+                  <Download className="w-3.5 h-3.5 text-[#64748b] hover:text-[#4f46e5]" />
                 </div>
               </div>
             </div>
@@ -1371,7 +1372,19 @@ export default function PaynbackProfile() {
                 {(MOCK_COMPANY.documents || []).map((docObj, idx) => (
                   <div 
                     key={idx} 
-                    onClick={() => docObj.document && window.open(docObj.document, '_blank')}
+                    onClick={() => {
+                      if (docObj.document) {
+                        window.open(docObj.document, '_blank');
+                      } else {
+                        Swal.fire({
+                          icon: 'info',
+                          title: 'Document Not Available',
+                          text: `"${docObj.title}" has not been uploaded yet.`,
+                          confirmButtonColor: '#6366f1',
+                          confirmButtonText: 'OK'
+                        });
+                      }
+                    }}
                     className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group"
                   >
                     <span className="text-xs font-bold text-[#475569] group-hover:text-[#6366f1] flex items-center">
@@ -1381,6 +1394,40 @@ export default function PaynbackProfile() {
                     <Download className={`w-4 h-4 ${docObj.document ? 'text-[#6366f1]' : 'text-[#cbd5e1] opacity-50'}`} />
                   </div>
                 ))}
+                {MOCK_COMPANY.investment?.termSheet && (
+                  <div 
+                    key="termsheet" 
+                    onClick={() => window.open(MOCK_COMPANY.investment.termSheet, '_blank')}
+                    className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group"
+                  >
+                    <span className="text-xs font-bold text-[#475569] group-hover:text-[#6366f1] flex items-center">
+                      <FileText className="w-4 h-4 mr-2.5 text-[#cbd5e1] group-hover:text-[#6366f1]" />
+                      Draft Term Sheet
+                    </span>
+                    <Download className="w-4 h-4 text-[#6366f1]" />
+                  </div>
+                )}
+                {!MOCK_COMPANY.investment?.termSheet && (
+                  <div 
+                    key="termsheet-empty"
+                    onClick={() => {
+                      Swal.fire({
+                        icon: 'info',
+                        title: 'Document Not Available',
+                        text: '"Draft Term Sheet" has not been uploaded yet.',
+                        confirmButtonColor: '#6366f1',
+                        confirmButtonText: 'OK'
+                      });
+                    }}
+                    className="p-3 bg-[#f8fafc] hover:bg-[#f5f3ff] border border-[#e2e8f0] rounded-xl flex items-center justify-between transition-colors cursor-pointer group"
+                  >
+                    <span className="text-xs font-bold text-[#475569] group-hover:text-[#6366f1] flex items-center">
+                      <FileText className="w-4 h-4 mr-2.5 text-[#cbd5e1] group-hover:text-[#6366f1]" />
+                      Draft Term Sheet
+                    </span>
+                    <Download className="w-4 h-4 text-[#cbd5e1] opacity-50" />
+                  </div>
+                )}
               </div>
             </div>
 
